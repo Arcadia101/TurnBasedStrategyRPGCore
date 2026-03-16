@@ -1,0 +1,70 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GridSystemVisual : MonoBehaviour
+{
+    public static GridSystemVisual Instance { get; private set; }
+    [SerializeField] private Transform gridSystemVisualSinglePrefab;
+    
+    private GridSystemVisualSingle[,] gridSystemVisualSingleArray;
+    private List<GridSystemVisualSingle> gridSystemVisualSingleList;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogError("There is already a GridSystemVisual in the scene!");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
+    void Start()
+    {
+        gridSystemVisualSingleArray = new GridSystemVisualSingle[LevelGrid.Instance.GetWidth(), LevelGrid.Instance.GetHeight()];
+        for (int x = 0; x < LevelGrid.Instance.GetWidth(); x++)
+        {
+            for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++)
+            {
+                GridPosition gridPosition = new GridPosition(x, z);
+                Transform gridSystemVisualSingleTransform = Instantiate(gridSystemVisualSinglePrefab, LevelGrid.Instance.GetWorldPosition(gridPosition), Quaternion.identity);
+                gridSystemVisualSingleArray[x,z] = gridSystemVisualSingleTransform.GetComponent<GridSystemVisualSingle>();
+                
+            }
+        }
+    }
+
+    private void Update()
+    {
+        UpdateGridVisual();
+    }
+
+    void UpdateGridVisual()
+    {
+        HideAllGridPosition();
+        Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
+        ShowGridPositionList(selectedUnit.GetMoveAction().GetValidActionGridPositionList());
+    }
+
+    public void HideAllGridPosition()
+    {
+        for (int x = 0; x < LevelGrid.Instance.GetWidth(); x++)
+        {
+            for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++)
+            {
+                gridSystemVisualSingleArray[x,z].Hide();
+            }
+        }
+    }
+    
+    public void ShowGridPositionList(List<GridPosition> gridPositionList)
+    {
+        foreach (GridPosition gridPosition in gridPositionList)  
+        {
+            gridSystemVisualSingleArray[gridPosition.x, gridPosition.z].Show();
+        }
+    }
+}

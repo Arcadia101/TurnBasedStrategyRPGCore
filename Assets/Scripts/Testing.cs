@@ -1,19 +1,19 @@
 using System;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Testing : MonoBehaviour
 {
-    [SerializeField] private Transform gridDebugObjectPrefab;
+    [SerializeField] private Unit unit;
     
-    private GridSystem gridSystem;
-    private void Start()
-    {
-        gridSystem = new GridSystem(10, 10, 2f);
-        gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
-    }
     
     private void Update()
     {
-        Debug.Log(gridSystem.GetGridPosition(MouseWorld.GetPosition()));
+        if (Keyboard.current.tKey.wasPressedThisFrame)
+        {
+            GridSystemVisual.Instance.HideAllGridPosition();
+            GridSystemVisual.Instance.ShowGridPositionList(unit.GetMoveAction().GetValidActionGridPositionList());
+            //unit.GetMoveAction().GetValidActionGridPositionList();
+        }
     }
 }
