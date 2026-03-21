@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8261108682759184691}
   - component: {fileID: 1605937745382352134}
   - component: {fileID: 3884391607846025773}
+  - component: {fileID: 5721112675720794914}
   m_Layer: 7
   m_Name: Unit
   m_TagString: Untagged
@@ -84,6 +85,19 @@ MonoBehaviour:
   unitAnimator: {fileID: 2055105807281715389}
   moveSpeed: 5
   rotateSpeed: 50
+  maxMoveDistance: 1
+--- !u!114 &5721112675720794914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3e8e4a05bb8a3542b339bada45938b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SpinAction
 --- !u!1 &7625631952971024137
 GameObject:
   m_ObjectHideFlags: 0

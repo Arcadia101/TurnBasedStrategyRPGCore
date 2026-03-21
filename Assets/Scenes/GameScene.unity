@@ -1335,8 +1335,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.471858, y: 0.000000047242406, z: -0.000000025283372, w: 0.8816746}
-  m_LocalPosition: {x: 0, y: 15, z: -10}
+  m_LocalRotation: {x: 0.331007, y: -0.000000027982068, z: 0.00000000981558, w: 0.9436283}
+  m_LocalPosition: {x: 0, y: 8.000001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1595,7 +1595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Cinemachine::Cinemachine.CinemachineTransposer
   m_BindingMode: 1
-  m_FollowOffset: {x: 0, y: 15, z: -10}
+  m_FollowOffset: {x: 0, y: 8.000001, z: -10}
   m_XDamping: 8
   m_YDamping: 20
   m_ZDamping: 8
@@ -2013,8 +2013,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1322122433}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.47185794, y: 0.0000000472424, z: -0.000000025283363, w: 0.88167465}
-  m_LocalPosition: {x: 0, y: 15, z: -10}
+  m_LocalRotation: {x: 0.33100697, y: -0.000000027982066, z: 0.0000000098155795, w: 0.9436283}
+  m_LocalPosition: {x: 0, y: 8.000001, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2135,7 +2135,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1684308665
 Transform:
   m_ObjectHideFlags: 0

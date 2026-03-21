@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveAction : MonoBehaviour
+public class MoveAction : BaseAction
 {
     [SerializeField] private Animator unitAnimator;
     [SerializeField] private float moveSpeed = 4f;
@@ -10,39 +10,46 @@ public class MoveAction : MonoBehaviour
     [SerializeField] private int maxMoveDistance = 1;
     
     private Vector3 _targetPos;
-    private Unit unit;
     
-    private void Awake()
+    
+    protected override void Awake()
     {
-        unit = GetComponent<Unit>();
+        base.Awake();
         _targetPos = transform.position;
     }
 
     private void Update()
     {
+        if (!isActive) return;
+        
+        Vector3 moveDir = (_targetPos - transform.position).normalized;
+        
         if (Vector3.Distance(transform.position, _targetPos) >= 0.1f)
         {
-            Vector3 moveDir = (_targetPos - transform.position).normalized;
             transform.position += moveDir * (moveSpeed * Time.deltaTime);
             
-            transform.forward = Vector3.Lerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
             unitAnimator.SetBool( "IsWalking", true);
         }
         else
         {
             unitAnimator.SetBool( "IsWalking", false);
+            Debug.Log(LevelGrid.Instance.GetGridPosition(transform.position));
+            isActive = false;
         }
 
+        transform.forward = Vector3.Lerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
     }
 
     public void Move(Vector3 targetPos)
     {
         _targetPos = targetPos;
+        isActive = true;
     }
     
     public void Move(GridPosition targetPos)
     {
         _targetPos = LevelGrid.Instance.GetWorldPosition(targetPos);
+        isActive = true;
     }
 
     public bool IsValidActionGridPosition(GridPosition gridPosition)
@@ -81,7 +88,6 @@ public class MoveAction : MonoBehaviour
                 }
 
                 validGridPositionList.Add(testGridPosition);
-                Debug.Log(testGridPosition);
             }
         }
         return validGridPositionList;
