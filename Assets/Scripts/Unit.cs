@@ -4,16 +4,28 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
+    [SerializeField] private int maxActionPoints;
+    [SerializeField] private int maxMovePoints;
+
     private GridPosition gridPosition;
     private MoveAction moveAction;
     private SpinAction spinAction; //testing of Action System.
     private BaseAction[] baseActionArray;
+    private int actionPoints;
+    private int movePoints;
+
+    
+    public static event EventHandler OnAnyActionPointsChanged;
+    
 
     private void Awake()
     {
         moveAction = GetComponent<MoveAction>();
         spinAction = GetComponent<SpinAction>();
         baseActionArray = GetComponents<BaseAction>();
+        
+        actionPoints = maxActionPoints;
+        movePoints = maxMovePoints;
     }
 
 
@@ -21,6 +33,8 @@ public class Unit : MonoBehaviour
     {
         gridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
         LevelGrid.Instance.AddUnitAtGridPosition(gridPosition, this);
+        
+        TurnSystem.Instance.OnTurnChanged += TurnSystem_OnTurnChanged;
     }
 
     private void Update()
@@ -52,4 +66,88 @@ public class Unit : MonoBehaviour
     {
         return baseActionArray;
     }
+
+    public bool CanSpendActionPointsToTakeAction(BaseAction baseAction)
+    {
+        if (actionPoints >= baseAction.GetActionPointsCost())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public bool TrySpendActionPointsOrMovePointsToTakeActionOrMove(BaseAction baseAction)
+    {
+        if (baseAction is MoveAction)
+        {
+            if (CanSpendMovePointsToMove(baseAction))
+            {
+                SpendMovePoints(baseAction.GetActionPointsCost());
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (CanSpendActionPointsToTakeAction(baseAction))
+            {
+                SpendActionPoints(baseAction.GetActionPointsCost());
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    public bool CanSpendMovePointsToMove(BaseAction baseAction)
+    {
+        if (movePoints >= baseAction.GetActionPointsCost())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    private void SpendActionPoints(int amount)
+    {
+        actionPoints -= amount;
+        
+        OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+    }
+    private void SpendMovePoints(int amount)
+    {
+        movePoints -= amount;
+        
+        OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public int GetActionPoints()
+    {
+        return actionPoints;
+    }
+    
+    public int GetMovePoints()
+    {
+        return movePoints;
+    }
+
+    private void TurnSystem_OnTurnChanged(object sender, EventArgs e)
+    {
+        actionPoints = maxActionPoints;
+        movePoints = maxMovePoints;
+        
+        OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+    }
+    
 }
