@@ -31,7 +31,7 @@ public class GridSystem
     
     public GridPosition GetGridPosition(Vector3 worldPosition)
     {
-        return new GridPosition((int)(worldPosition.x / cellSize), (int)(worldPosition.z / cellSize));
+        return new GridPosition(Mathf.RoundToInt(worldPosition.x / cellSize), Mathf.RoundToInt(worldPosition.z / cellSize));
     }
 
     public void CreateDebugObjects(Transform debugPrefab)
