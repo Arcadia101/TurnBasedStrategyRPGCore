@@ -6,7 +6,8 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private int maxActionPoints;
     [SerializeField] private int maxMovePoints;
-
+    [SerializeField] private bool isEnemy;
+    
     private GridPosition gridPosition;
     private MoveAction moveAction;
     private SpinAction spinAction; //testing of Action System.
@@ -144,10 +145,19 @@ public class Unit : MonoBehaviour
 
     private void TurnSystem_OnTurnChanged(object sender, EventArgs e)
     {
-        actionPoints = maxActionPoints;
-        movePoints = maxMovePoints;
+        if ((IsEnemy() && !TurnSystem.Instance.IsPlayerTurn()) || (!IsEnemy() && TurnSystem.Instance.IsPlayerTurn()))
+        {
+            actionPoints = maxActionPoints;
+            movePoints = maxMovePoints;
         
-        OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+            OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+        }
+        
+    }
+    
+    public bool IsEnemy()
+    {
+        return isEnemy;
     }
     
 }
