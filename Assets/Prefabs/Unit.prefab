@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3297527272746011550
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7544042416086798725}
+  m_Layer: 7
+  m_Name: BulletSpawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7544042416086798725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3297527272746011550}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.0887, z: 0.7263}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 374434297627652871}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6314060414634135025
 GameObject:
   m_ObjectHideFlags: 0
@@ -10,9 +41,11 @@ GameObject:
   m_Component:
   - component: {fileID: 6173891613177242039}
   - component: {fileID: 8261108682759184691}
+  - component: {fileID: 9182409222316314108}
   - component: {fileID: 1605937745382352134}
   - component: {fileID: 3884391607846025773}
   - component: {fileID: 5721112675720794914}
+  - component: {fileID: 5369258130610472144}
   m_Layer: 7
   m_Name: Unit
   m_TagString: Untagged
@@ -49,6 +82,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18671f46db3de9e498a93065c2066127, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  maxActionPoints: 0
+  maxMovePoints: 0
+  isEnemy: 0
+--- !u!114 &9182409222316314108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc42a5428ffe15544a4cd06180d1955c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitAnimator
+  animator: {fileID: 2055105807281715389}
+  bulletProjectilePrefab: {fileID: 981228025371076374, guid: 3e0e6368c61ec4b4fa4f163412c9fbd9, type: 3}
+  shootPointTransform: {fileID: 7544042416086798725}
 --- !u!65 &1605937745382352134
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -82,7 +133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 778e9494a56c89440991723755b2c229, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveAction
-  unitAnimator: {fileID: 2055105807281715389}
+  ActionPointsCost: 1
   moveSpeed: 5
   rotateSpeed: 50
   maxMoveDistance: 1
@@ -98,6 +149,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e8e4a05bb8a3542b339bada45938b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpinAction
+  ActionPointsCost: 1
+--- !u!114 &5369258130610472144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7811c9ee5b61ec0428692e5a5d462ab0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShootAction
+  ActionPointsCost: 1
+  maxShootDistance: 7
+  aimingTime: 1.5
+  shootTime: 0.1
+  cooloffTime: 0.5
+  rotateSpeed: 10
 --- !u!1 &7625631952971024137
 GameObject:
   m_ObjectHideFlags: 0
@@ -300,7 +370,10 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 25af05085d2957e42ac6b80b69ddd26a, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4620998167008108, guid: c25ac4fdc903e7d49a7520930673ecd6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7544042416086798725}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c25ac4fdc903e7d49a7520930673ecd6, type: 3}
 --- !u!4 &374434297627652871 stripped

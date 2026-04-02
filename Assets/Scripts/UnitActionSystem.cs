@@ -110,13 +110,13 @@ public class UnitActionSystem : MonoBehaviour
             {
                 if (hit.transform.TryGetComponent<Unit>(out Unit unit))
                 {
-                    if (selectedUnit == unit)
+                    if (unit == selectedUnit)
                     {
                         //Same Unit selected.
                         return false;
                     }
 
-                    if (selectedUnit.IsEnemy())
+                    if (unit.IsEnemy())
                     {
                         //Click on enemy unit.
                         return false;

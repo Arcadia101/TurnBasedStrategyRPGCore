@@ -16,17 +16,15 @@ public class SpinAction : BaseAction
         totalSpinAmount += speedAddAmount;
         if (totalSpinAmount >= 360)
         {
-            isActive = false;
-            onActionComplete();
+            ActionComplete();
         }
         
     }
 
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        this.onActionComplete = onActionComplete;
+        ActionStart(onActionComplete);
         totalSpinAmount = 0;
-        isActive = true;
     }
 
     public override List<GridPosition> GetValidActionGridPositionList()
@@ -41,8 +39,4 @@ public class SpinAction : BaseAction
         return "Spin";
     }
     
-    public override int GetActionPointsCost()
-    {
-        return ActionPointsCost;
-    }
 }
