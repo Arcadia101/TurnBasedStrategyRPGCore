@@ -3285,6 +3285,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridSystemVisuals
   gridSystemVisualSinglePrefab: {fileID: 5279389053217739871, guid: bfe7db2b21e0d504f8c32890df80fdde, type: 3}
+  gridVisualTypeMaterialList:
+  - gridVisualType: 0
+    material: {fileID: 2100000, guid: 4331fbe5d02850a498fda9646d9a3471, type: 2}
+  - gridVisualType: 1
+    material: {fileID: 2100000, guid: 8530a0e41906ac848b59a41c83a21aac, type: 2}
+  - gridVisualType: 2
+    material: {fileID: 2100000, guid: 36335f24a28fdec4a8929a6c54a3ea11, type: 2}
+  - gridVisualType: 3
+    material: {fileID: 2100000, guid: a9ffaf590e61c5b418158d6bc141a9b3, type: 2}
+  - gridVisualType: 4
+    material: {fileID: 2100000, guid: fda376fd0b903184bbb335bdc38d9582, type: 2}
+  - gridVisualType: 5
+    material: {fileID: 2100000, guid: 84e549d69c493d541abc0b8a298a818e, type: 2}
+  - gridVisualType: 6
+    material: {fileID: 2100000, guid: 18a464e5bd3350942887af263e675057, type: 2}
+  - gridVisualType: 7
+    material: {fileID: 2100000, guid: bc6a6678b21224248a9036075628e713, type: 2}
+  - gridVisualType: 8
+    material: {fileID: 2100000, guid: 2ba033a99126b0448be796bb0749b486, type: 2}
+  - gridVisualType: 9
+    material: {fileID: 2100000, guid: 34f2aba35ec4f5d4c95742f001a502f1, type: 2}
 --- !u!4 &1069607528
 Transform:
   m_ObjectHideFlags: 0
