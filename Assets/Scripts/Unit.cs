@@ -12,12 +12,16 @@ public class Unit : MonoBehaviour
     private HealthSystem healthSystem;
     private MoveAction moveAction;
     private SpinAction spinAction; //testing of Action System.
+    private ShootAction shootAction;
     private BaseAction[] baseActionArray;
     private int actionPoints;
     private int movePoints;
 
     
     public static event EventHandler OnAnyActionPointsChanged;
+
+    public static event EventHandler OnAnyUnitSpawned;
+    public static event EventHandler OnAnyUnitDead;
     
 
     private void Awake()
@@ -25,6 +29,7 @@ public class Unit : MonoBehaviour
         healthSystem = GetComponent<HealthSystem>();
         moveAction = GetComponent<MoveAction>();
         spinAction = GetComponent<SpinAction>();
+        shootAction = GetComponent<ShootAction>();
         baseActionArray = GetComponents<BaseAction>();
         
         actionPoints = maxActionPoints;
@@ -40,6 +45,8 @@ public class Unit : MonoBehaviour
         TurnSystem.Instance.OnTurnChanged += TurnSystem_OnTurnChanged;
         
         healthSystem.OnDead += HealthSystem_OnDead;
+        
+        OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     private void Update()
@@ -49,7 +56,7 @@ public class Unit : MonoBehaviour
         {
             GridPosition oldGridPosition = gridPosition;
             gridPosition = newGridPosition;
-            LevelGrid.Instance.UnitMovedGridPosition(this, gridPosition, newGridPosition);
+            LevelGrid.Instance.UnitMovedGridPosition(this, oldGridPosition, newGridPosition);
         }
     }
 
@@ -63,6 +70,11 @@ public class Unit : MonoBehaviour
         return spinAction;
     }
     
+    public ShootAction GetShootAction()
+    {
+        return shootAction;
+    }
+
     public GridPosition GetGridPosition()
     {
         return gridPosition;
@@ -169,6 +181,8 @@ public class Unit : MonoBehaviour
     {
         LevelGrid.Instance.RemoveUnitAtGridPosition(gridPosition, this);
         Destroy(gameObject);
+        
+        OnAnyUnitDead?.Invoke(this, EventArgs.Empty);
     }
     public bool IsEnemy()
     {
@@ -178,6 +192,11 @@ public class Unit : MonoBehaviour
     public void Damage(int damageAmount)
     {
         healthSystem.Damage(damageAmount);
+    }
+    
+    public float GetHealthNormalized()
+    {
+        return healthSystem.GetHealthNormalized();
     }
     
 }

@@ -71,6 +71,7 @@ public class GridSystemVisual : MonoBehaviour
 
         UnitActionSystem.Instance.OnSelectedActionChanged += UnitActionSystem_OnSelectedActionChanged;
         LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
+        
         UpdateGridVisual();
     }
 
@@ -85,6 +86,7 @@ public class GridSystemVisual : MonoBehaviour
         {
             default:
             case MoveAction moveAction:
+                gridVisualType = GridVisualType.White;
                 break;
             case SpinAction spinAction:
                 gridVisualType = GridVisualType.Blue;

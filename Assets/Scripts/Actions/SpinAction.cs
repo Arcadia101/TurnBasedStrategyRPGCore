@@ -38,5 +38,13 @@ public class SpinAction : BaseAction
     {
         return "Spin";
     }
-    
+
+    public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
+    {
+        return new EnemyAIAction
+        {
+            gridPosition = gridPosition,
+            actionValue = 0,
+        };
+    }
 }
