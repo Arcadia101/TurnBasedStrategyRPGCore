@@ -771,6 +771,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShootAction
   ActionPointsCost: 1
+  obstaclesLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
   maxShootDistance: 7
   aimingTime: 1.5
   shootTime: 0.1
