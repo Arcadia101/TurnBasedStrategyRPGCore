@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour
     private const float MIN_FOLLOW_Y_OFFSET = 5f;
     private const float MAX_FOLLOW_Y_OFFSET = 15f;
     
-    private Vector3 inputMoveDir;
+    private Vector2 inputMoveDir;
     private Vector3 moveVector;
     private Vector3 rotationVector;
     private Vector3 followOffset;
@@ -41,28 +41,10 @@ public class CameraController : MonoBehaviour
 
     private void HandleMovement()
     {
-        inputMoveDir = new Vector3(0, 0, 0);
-        if (Keyboard.current.wKey.isPressed)
-        {
-            inputMoveDir.z = +1f;
-        }
-
-        if (Keyboard.current.sKey.isPressed)
-        {
-            inputMoveDir.z = -1f;
-        }
-
-        if (Keyboard.current.aKey.isPressed)
-        {
-            inputMoveDir.x = -1f;
-        }
-
-        if (Keyboard.current.dKey.isPressed)
-        {
-            inputMoveDir.x = +1f;
-        }
+        inputMoveDir = InputManager.Instance.GetCameraMoveVector();
         
-        moveVector = transform.forward * inputMoveDir.z + transform.right * inputMoveDir.x;
+        
+        moveVector = transform.forward * inputMoveDir.y + transform.right * inputMoveDir.x;
         transform.position += moveVector * moveSpeed * Time.deltaTime;
     }
 
@@ -70,30 +52,16 @@ public class CameraController : MonoBehaviour
     {
         rotationVector = new Vector3(0, 0, 0);
         
-        if (Keyboard.current.qKey.isPressed)
-        {
-            rotationVector.y = +1f;
-        }
-
-        if (Keyboard.current.eKey.isPressed)
-        {
-            rotationVector.y = -1f;
-        }
+        rotationVector.y = InputManager.Instance.GetCameraRotateAmount();
         
         transform.eulerAngles += rotationVector * rotationSpeed * Time.deltaTime;
+        
+        //To Do: Make it smother.
     }
 
     private void HandleZoom()
     {
-        if (Mouse.current.scroll.ReadValue().y > 0)
-        {
-            followOffset.y -= zoomAmount;
-        }
-
-        if (Mouse.current.scroll.ReadValue().y < 0)
-        {
-            followOffset.y += zoomAmount;
-        }
+       followOffset.y += InputManager.Instance.GetCameraZoomAmount() * zoomAmount;
 
         
         followOffset.y = Mathf.Clamp(followOffset.y, MIN_FOLLOW_Y_OFFSET, MAX_FOLLOW_Y_OFFSET);
