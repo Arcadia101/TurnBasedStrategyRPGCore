@@ -8,10 +8,8 @@ public class LevelGrid : MonoBehaviour
     
     public event EventHandler OnAnyUnitMovedGridPosition;
     
-    [SerializeField] private Transform gridDebugObjectPrefab;
-    
-    [SerializeField] private int width = 10;
-    [SerializeField] private int height = 10;
+    [SerializeField] private int width = 5;
+    [SerializeField] private int height = 5;
     [SerializeField] private float cellSize = 2.0f;
     
     private GridSystem<GridObject> gridSystem;
@@ -24,8 +22,20 @@ public class LevelGrid : MonoBehaviour
             Destroy(gameObject);
         }
         Instance = this;
-        gridSystem = new GridSystem<GridObject>(10, 10, 2f, (GridSystem<GridObject> g, GridPosition gridPosition) => new GridObject(g, gridPosition));
-        //gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
+
+        gridSystem = new GridSystem<GridObject>(width, height, cellSize, 
+            (GridSystem<GridObject> g, GridPosition gridPosition) =>
+            {
+                // Patrón de tablero de ajedrez para todo el grid
+                if ((gridPosition.x + gridPosition.z) % 2 == 0)
+                {
+                    return new GridObject(g, gridPosition, TileType.Octagon);
+                }
+                else
+                {
+                    return new GridObject(g, gridPosition, TileType.Rhombus);
+                }
+            });
     }
 
     private void Start()
@@ -36,7 +46,10 @@ public class LevelGrid : MonoBehaviour
     public void AddUnitAtGridPosition(GridPosition gridPosition, Unit unit)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        gridObject.AddUnit(unit);
+        if (gridObject.CanAddUnit())
+        {
+            gridObject.AddUnit(unit);
+        }
     }
     
     public List<Unit> GetUnitListAtGridPosition(GridPosition gridPosition)
@@ -69,6 +82,12 @@ public class LevelGrid : MonoBehaviour
         return gridObject.HasAnyUnit();
     }
     
+    public bool CanAddUnitAtGridPosition(GridPosition gridPosition)
+    {
+        GridObject gridObject = gridSystem.GetGridObject(gridPosition);
+        return gridObject.CanAddUnit();
+    }
+    
     public Unit GetUnitAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
@@ -85,5 +104,11 @@ public class LevelGrid : MonoBehaviour
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         gridObject.SetInteractable(interactable);
+    }
+
+    public TileType GetTileTypeAtGridPosition(GridPosition gridPosition)
+    {
+        GridObject gridObject = gridSystem.GetGridObject(gridPosition);
+        return gridObject.GetTileType();
     }
 }

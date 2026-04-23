@@ -8,14 +8,28 @@ public class GridObject
     private List<Unit> unitList;
     private IInteractable interactable;
 
+    private TileType TileType;
+    private int maxUnitCount;
 
-    public GridObject(GridSystem<GridObject> gridSystem, GridPosition gridPosition)
+    public GridObject(GridSystem<GridObject> gridSystem, GridPosition gridPosition, TileType tileType)
     {
         this.gridSystem = gridSystem;
         this.gridPosition = gridPosition;
+        this.TileType = tileType;
         unitList = new List<Unit>();
-    
 
+        switch (tileType)
+        {
+            case TileType.Octagon:
+                maxUnitCount = 3;
+                break;
+            case TileType.Rhombus:
+                maxUnitCount = 1;
+                break;
+            case TileType.Empty:
+                maxUnitCount = 0;
+                break;
+        }
     }
 
     public override string ToString()
@@ -31,7 +45,6 @@ public class GridObject
     public void AddUnit(Unit unit)
     {
         unitList.Add(unit);
-
     }
 
     public void RemoveUnit(Unit unit)
@@ -59,8 +72,13 @@ public class GridObject
         {
             return null;
         }
-        
     }
+    
+    public bool CanAddUnit()
+    {
+        return unitList.Count < maxUnitCount;
+    }
+
     public IInteractable GetInteractable()
     {
         return interactable;
@@ -69,5 +87,10 @@ public class GridObject
     public void SetInteractable(IInteractable interactable)
     {
         this.interactable = interactable;
+    }
+    
+    public TileType GetTileType()
+    {
+        return TileType;
     }
 }

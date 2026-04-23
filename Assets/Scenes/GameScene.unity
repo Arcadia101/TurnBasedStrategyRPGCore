@@ -135,7 +135,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &12178447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1933,7 +1933,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1941,7 +1941,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 2
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -3101,9 +3101,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23a9321e93064e4458a7581d4638b1a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LevelGrid
-  gridDebugObjectPrefab: {fileID: 6969726078708406842, guid: 5b426658616f9684db40114ce229e965, type: 3}
-  width: 18
-  height: 17
+  width: 5
+  height: 5
   cellSize: 2
 --- !u!4 &504120918
 Transform:
@@ -3113,13 +3112,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 504120916}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: 0, y: 0.38268343, z: 0, w: 0.92387956}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 45, z: 0}
 --- !u!1001 &536984218
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3606,7 +3605,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &650051111
 Transform:
   m_ObjectHideFlags: 0
@@ -5205,6 +5204,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crate (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 3935819150301956708, guid: 5e921a97fa3480d428fb4fcdbbe25667, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5239,7 +5242,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5048eda3541928c43b7f4c5db807e487, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridSystemVisuals
-  gridSystemVisualSinglePrefab: {fileID: 5279389053217739871, guid: bfe7db2b21e0d504f8c32890df80fdde, type: 3}
+  octagonVisualPrefab: {fileID: 5279389053217739871, guid: 5ceb11a1fc6184849903e7dd6112e2bf, type: 3}
+  rhombusVisualPrefab: {fileID: 5279389053217739871, guid: 7c282c133385ac142b1019172a2fe4aa, type: 3}
+  showGridCoordinates: 1
   gridVisualTypeMaterialList:
   - gridVisualType: 0
     material: {fileID: 2100000, guid: 4331fbe5d02850a498fda9646d9a3471, type: 2}
@@ -5359,6 +5364,10 @@ PrefabInstance:
     - target: {fileID: 3038457711198268232, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_Name
       value: UnitEnemy
+      objectReference: {fileID: 0}
+    - target: {fileID: 3038457711198268232, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5215987335940856980, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: maxMoveDistance
@@ -6051,7 +6060,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1477563686
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6907,7 +6916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3038457711198268232, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5215987335940856980, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: maxMoveDistance
@@ -7639,7 +7648,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7647,7 +7656,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 6
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6173891613177242039, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7933,6 +7942,10 @@ PrefabInstance:
     - target: {fileID: 3935819150301956708, guid: 5e921a97fa3480d428fb4fcdbbe25667, type: 3}
       propertyPath: m_Name
       value: Crate
+      objectReference: {fileID: 0}
+    - target: {fileID: 3935819150301956708, guid: 5e921a97fa3480d428fb4fcdbbe25667, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

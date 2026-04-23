@@ -37,7 +37,8 @@ public class Pathfinding : MonoBehaviour
         gridSystem = new GridSystem<PathNode>(this.width, this.height, this.cellSize,
             (GridSystem<PathNode> g, GridPosition gridPosition) => new PathNode(gridPosition));
         
-        gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
+        // Ya no instanciamos objetos de debug del pathfinding para evitar errores de casteo
+        // gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
 
         for (int x = 0; x < this.width; x++)
         {
@@ -136,7 +137,6 @@ public class Pathfinding : MonoBehaviour
     public int CalculateDistance(GridPosition gridPositionA, GridPosition gridPositionB)
     {
         GridPosition gridPositionDistance = gridPositionA - gridPositionB;
-        int totalDistance = Mathf.Abs(gridPositionDistance.x) + Mathf.Abs(gridPositionDistance.z);
         int xDistance = Mathf.Abs(gridPositionDistance.x);
         int zDistance = Mathf.Abs(gridPositionDistance.z);
         int reamining = Mathf.Abs(xDistance - zDistance);
@@ -161,56 +161,27 @@ public class Pathfinding : MonoBehaviour
     {
         return gridSystem.GetGridObject(new GridPosition(x, z));
     }
+    
     private List<PathNode> GetNeighbourList(PathNode currentNode)
     {
         List<PathNode> neighbourList = new List<PathNode>();
-        
         GridPosition gridPosition = currentNode.GetGridPosition();
 
-        if (gridPosition.x -1 >= 0)
+        bool isOctagon = (gridPosition.x + gridPosition.z) % 2 == 0;
+
+        // Conexiones en el eje X/Z del array (estos conectan a Rombos visualmente en diagonal)
+        if (gridPosition.x - 1 >= 0) neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z));
+        if (gridPosition.x + 1 < gridSystem.GetWidth()) neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z));
+        if (gridPosition.z - 1 >= 0) neighbourList.Add(GetNode(gridPosition.x, gridPosition.z - 1));
+        if (gridPosition.z + 1 < gridSystem.GetHeight()) neighbourList.Add(GetNode(gridPosition.x, gridPosition.z + 1));
+
+        // Conexiones diagonales del array (estos conectan Octágonos entre sí, ortogonalmente en la vista)
+        if (isOctagon)
         {
-            //Left
-            neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z + 0));
-            if (gridPosition.z - 1 >= 0)
-            {
-                //Left Down
-                neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z - 1));
-            }
-
-            if (gridPosition.z + 1 < gridSystem.GetHeight())
-            {
-                //Left Up
-                neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z + 1));
-            }
-        }
-
-        if (gridPosition.x +1 < gridSystem.GetWidth())
-        {
-            //Right
-            neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z + 0));
-            if (gridPosition.z - 1 >= 0)
-            {
-                //Right Down
-                neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z - 1));
-            }
-
-            if (gridPosition.z + 1 < gridSystem.GetHeight())
-            {
-                //Right Up
-                neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z + 1));
-            }
-        }
-
-        if (gridPosition.z - 1 >= 0)
-        {
-            //Down
-            neighbourList.Add(GetNode(gridPosition.x + 0, gridPosition.z - 1));
-        }
-
-        if (gridPosition.z + 1 < gridSystem.GetHeight())
-        {
-            //Up
-            neighbourList.Add(GetNode(gridPosition.x + 0, gridPosition.z + 1));
+            if (gridPosition.x - 1 >= 0 && gridPosition.z - 1 >= 0) neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z - 1));
+            if (gridPosition.x - 1 >= 0 && gridPosition.z + 1 < gridSystem.GetHeight()) neighbourList.Add(GetNode(gridPosition.x - 1, gridPosition.z + 1));
+            if (gridPosition.x + 1 < gridSystem.GetWidth() && gridPosition.z - 1 >= 0) neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z - 1));
+            if (gridPosition.x + 1 < gridSystem.GetWidth() && gridPosition.z + 1 < gridSystem.GetHeight()) neighbourList.Add(GetNode(gridPosition.x + 1, gridPosition.z + 1));
         }
 
         return neighbourList;

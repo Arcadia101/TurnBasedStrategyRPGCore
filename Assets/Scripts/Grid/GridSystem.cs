@@ -27,26 +27,24 @@ public class GridSystem<TGridObject>
 
     public Vector3 GetWorldPosition(GridPosition gridPosition)
     {
-        return new Vector3(gridPosition.x, 0, gridPosition.z) * cellSize;
+        float centeredX = gridPosition.x - (width - 1) / 2f;
+        float centeredZ = gridPosition.z - (height - 1) / 2f;
+
+        float worldX = (centeredX - centeredZ) * cellSize * 0.5f;
+        float worldZ = (centeredX + centeredZ) * cellSize * 0.5f;
+        
+        return new Vector3(worldX, 0, worldZ);
     }
     
     public GridPosition GetGridPosition(Vector3 worldPosition)
     {
-        return new GridPosition(Mathf.RoundToInt(worldPosition.x / cellSize), Mathf.RoundToInt(worldPosition.z / cellSize));
-    }
+        float x = worldPosition.x / (cellSize * 0.5f);
+        float z = worldPosition.z / (cellSize * 0.5f);
 
-    public void CreateDebugObjects(Transform debugPrefab)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            for (int z = 0; z < height; z++)
-            {
-                GridPosition gridPosition = new GridPosition(x, z);
-                Transform debugTransform = GameObject.Instantiate(debugPrefab, GetWorldPosition(gridPosition), Quaternion.identity);
-                GridDebugObject gridDebugObject = debugTransform.GetComponent<GridDebugObject>();
-                gridDebugObject.SetGridObject(GetGridObject(gridPosition));
-            }
-        }
+        int gridX = Mathf.RoundToInt(((z + x) / 2f) + (width - 1) / 2f);
+        int gridZ = Mathf.RoundToInt(((z - x) / 2f) + (height - 1) / 2f);
+
+        return new GridPosition(gridX, gridZ);
     }
 
     public TGridObject GetGridObject(GridPosition gridPosition)

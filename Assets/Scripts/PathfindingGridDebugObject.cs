@@ -13,13 +13,13 @@ public class PathfindingGridDebugObject : GridDebugObject
 
     public override void SetGridObject(object gridObject)
     {
-        base.SetGridObject(gridObject);
+        //base.SetGridObject(gridObject);
         pathNode = (PathNode)gridObject;
     }
 
     protected override void Update()
     {
-        base.Update();
+        //base.Update();
         gCostText.text = pathNode.GetGCost().ToString();
         hCostText.text = pathNode.GetHCost().ToString();
         fCostText.text = pathNode.GetFCost().ToString();
