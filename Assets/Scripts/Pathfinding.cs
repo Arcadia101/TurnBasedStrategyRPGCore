@@ -7,7 +7,7 @@ public class Pathfinding : MonoBehaviour
     public static Pathfinding Instance { get; private set; }
     
     private const int MOVE_STRAIGHT_COST = 10;
-    private const int MOVE_DIAGONAL_COST = 14;
+    private const int MOVE_DIAGONAL_COST = 10;
     
     [SerializeField] private Transform gridDebugObjectPrefab;
     [SerializeField] private LayerMask obstaclesLayerMask;

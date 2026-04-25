@@ -12,7 +12,7 @@ public class HealthSystem : MonoBehaviour
     
     private void Awake()
     {
-        health = maxHealth;
+        health = maxHealth/2;
     }
 
     public void Damage(int damageAmount)

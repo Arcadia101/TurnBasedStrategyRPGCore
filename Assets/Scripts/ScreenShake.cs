@@ -1,4 +1,4 @@
-using Cinemachine;
+using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,21 +30,25 @@ public class ScreenShake : MonoBehaviour
         {
             cinemachineCurrentImpulseSource.GenerateImpulse();
         }
-        
-        
-        
     }
 
     public void SelectCurrentInputSource()
     {
-        if (Camera.main.GetComponent<CinemachineBrain>().ActiveVirtualCamera.Priority > 15)
+        var brain = Camera.main.GetComponent<CinemachineBrain>();
+        if (brain != null && brain.ActiveVirtualCamera != null)
         {
-            cinemachineCurrentImpulseSource = cinemachineActionCameraImpulseSource;
+            var ActiveCamera = brain.ActiveVirtualCamera as CinemachineCamera;
+            
+            // Comprobación de seguridad: Verificamos que no sea nulo antes de acceder a su prioridad.
+            if (ActiveCamera != null && ActiveCamera.Priority.Value > 15)
+            {
+                cinemachineCurrentImpulseSource = cinemachineActionCameraImpulseSource;
+                return;
+            }
         }
-        else
-        {
-            cinemachineCurrentImpulseSource = cinemachineDronCameraImpulseSource;
-        }
+        
+        // Default
+        cinemachineCurrentImpulseSource = cinemachineDronCameraImpulseSource;
     }
     
     public void Shake(float intensity)

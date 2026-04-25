@@ -73,7 +73,7 @@ public class UnitActionSystem : MonoBehaviour
         if (InputManager.Instance.WasConfirmPressedThisFrame())
         {
             GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition());
-            if (selectedUnit != null && selectedAction.IsValidActionGridPosition(mouseGridPosition))
+            if (selectedUnit != null && selectedAction != null && selectedAction.IsValidActionGridPosition(mouseGridPosition))
             {
                 if (selectedUnit.TrySpendActionPointsOrMovePointsToTakeActionOrMove(selectedAction))
                 {
@@ -133,7 +133,16 @@ public class UnitActionSystem : MonoBehaviour
     private void SetSelectedUnit(Unit unit)
     {
         selectedUnit = unit;
-        SetSelectedAction(unit.GetAction<MoveAction>());
+        
+        if (unit != null)
+        {
+            SetSelectedAction(unit.GetAction<MoveAction>());
+        }
+        else
+        {
+            SetSelectedAction(null);
+        }
+
         OnSelectedUnitChanged?.Invoke(this, EventArgs.Empty);
     }
 
