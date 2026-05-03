@@ -38,13 +38,28 @@ public class UnitActionSystemUI : MonoBehaviour
 
     private void CreateUnitActionButtons()
     {
+        // Limpiamos los botones anteriores
         foreach (Transform buttonTransform in actionButtonContainerTransform)
         {
             Destroy(buttonTransform.gameObject);
         }
-        
         actionButtonUIList.Clear();
+        
         selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
+
+        // Si no hay unidad seleccionada, apagamos la UI y no intentamos crear botones
+        if (selectedUnit == null)
+        {
+            actionButtonContainerTransform.gameObject.SetActive(false);
+            actionPointsText.gameObject.SetActive(false);
+            movePointsText.gameObject.SetActive(false);
+            return;
+        }
+
+        // Si hay una unidad, encendemos la UI y creamos sus botones
+        actionButtonContainerTransform.gameObject.SetActive(true);
+        actionPointsText.gameObject.SetActive(true);
+        movePointsText.gameObject.SetActive(true);
 
         foreach (BaseAction baseAction in selectedUnit.GetBaseActionArray())
         {
@@ -74,6 +89,9 @@ public class UnitActionSystemUI : MonoBehaviour
     }
     private void UpdateSelectedVisual()
     {
+        // Seguro por si acaso se llama y no hay unidad
+        if (UnitActionSystem.Instance.GetSelectedUnit() == null) return;
+
         foreach (ActionButtonUI actionButtonUI in actionButtonUIList)
         {
             actionButtonUI.UpdateSelectedVisual();
@@ -83,6 +101,9 @@ public class UnitActionSystemUI : MonoBehaviour
     private void UpdateActionAndMovePoints()
     {
         Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
+        
+        // Evitamos el NullReferenceException si deseleccionamos a la unidad
+        if (selectedUnit == null) return;
         
         actionPointsText.text = "Action Points: " + selectedUnit.GetActionPoints().ToString();
         movePointsText.text = "Move Points: " + selectedUnit.GetMovePoints().ToString();

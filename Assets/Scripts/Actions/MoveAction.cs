@@ -51,6 +51,13 @@ public class MoveAction : BaseAction
     public override void TakeAction(GridPosition targetPos, Action onActionComplete)
     {
         List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(unit.GetGridPosition(), targetPos, out int pathLength);
+
+        if (pathGridPositionList == null)
+        {
+            ActionComplete();
+            return;
+        }
+
         currentPositionIndex = 0;
         positionList = new List<Vector3>();
 
@@ -58,12 +65,19 @@ public class MoveAction : BaseAction
         {
             positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
         }
-            
+
         OnStartMoving?.Invoke(this, EventArgs.Empty);
-        
+
         ActionStart(onActionComplete);
     }
     
+    public override List<GridPosition> GetValidActionGridPositionList()
+    {
+        GridPosition unitGridPosition = unit.GetGridPosition();
+
+        return Pathfinding.Instance.GetReachableGridPositionList(unitGridPosition, maxMoveDistance);
+    }
+    /*
     public override List<GridPosition> GetValidActionGridPositionList()
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
@@ -87,15 +101,17 @@ public class MoveAction : BaseAction
                     continue;
                 }
                 
-                if (LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
+                // NUEVO: En lugar de comprobar si hay ALGUNA unidad, comprobamos si la casilla está LLENA
+                // según su capacidad (3 en octágono, 1 en rombo).
+                if (!LevelGrid.Instance.CanAddUnitAtGridPosition(testGridPosition))
                 {
-                    //posicion ocupada por otra unidad.
+                    //posicion llena (capacidad máxima alcanzada).
                     continue;
                 }
 
                 if (!Pathfinding.Instance.IsWalkableGridPosition(testGridPosition))
                 {
-                    //posicion no caminable.
+                    //posicion no caminable (obstáculos físicos).
                     continue;
                 }
 
@@ -117,6 +133,7 @@ public class MoveAction : BaseAction
         }
         return validGridPositionList;
     }
+    */
 
     public override string GetActionName()
     {

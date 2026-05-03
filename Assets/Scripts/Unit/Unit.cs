@@ -45,12 +45,43 @@ public class Unit : MonoBehaviour
 
     private void Update()
     {
-        GridPosition newGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
-        if (newGridPosition != gridPosition)
+        MoveAction moveAction = GetAction<MoveAction>();
+        bool isMoving = moveAction != null && moveAction.IsActionActive();
+
+        // Solo permitimos que la unidad cambie de casilla LÓGICA si está ejecutando
+        // activamente una acción de movimiento. 
+        if (isMoving)
         {
-            GridPosition oldGridPosition = gridPosition;
-            gridPosition = newGridPosition;
-            LevelGrid.Instance.UnitMovedGridPosition(this, oldGridPosition, newGridPosition);
+            GridPosition newGridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
+            if (newGridPosition != gridPosition)
+            {
+                GridPosition oldGridPosition = gridPosition;
+                gridPosition = newGridPosition;
+                LevelGrid.Instance.UnitMovedGridPosition(this, oldGridPosition, newGridPosition);
+            }
+        }
+        else
+        {
+            // Si está quieta, aplicamos el offset visual sin afectar su casilla lógica
+            HandleFormationMovement();
+        }
+    }
+
+    private void HandleFormationMovement()
+    {
+        // Obtenemos la posición de formación ideal desde el LevelGrid
+        Vector3 targetPosition = LevelGrid.Instance.GetUnitWorldPosition(this);
+        
+        float stopDistance = 0.05f;
+        if (Vector3.Distance(transform.position, targetPosition) > stopDistance)
+        {
+            Vector3 moveDir = (targetPosition - transform.position).normalized;
+            float moveSpeed = 4f;
+            transform.position += moveDir * (moveSpeed * Time.deltaTime);
+
+            // Rotación suave hacia adelante o hacia el centro de la formación (opcional)
+            float rotateSpeed = 10f;
+            transform.forward = Vector3.Lerp(transform.forward, moveDir, Time.deltaTime * rotateSpeed);
         }
     }
 

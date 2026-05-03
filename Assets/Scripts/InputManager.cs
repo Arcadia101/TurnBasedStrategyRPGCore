@@ -19,6 +19,22 @@ public class InputManager : MonoBehaviour
         inputSystemActions = new InputSystem_Actions();
         inputSystemActions.Player.Enable();
     }
+
+    public Vector2 GetPointerMoveVector()
+    {
+        return inputSystemActions.Player.PointerMovement.ReadValue<Vector2>();
+    }
+
+    public bool WasCycleLeftPressed()
+    {
+        return inputSystemActions.Player.CycleLeft.WasPressedThisFrame();
+    }
+
+    public bool WasCycleRightPressed()
+    {
+        return inputSystemActions.Player.CycleRight.WasPressedThisFrame();
+    }
+    
     public Vector2 GetMouseScreenPosition()
     {
         return Mouse.current.position.ReadValue();

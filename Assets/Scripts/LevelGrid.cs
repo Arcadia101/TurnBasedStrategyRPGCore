@@ -70,6 +70,7 @@ public class LevelGrid : MonoBehaviour
         AddUnitAtGridPosition(toGridPosition, unit);
         OnAnyUnitMovedGridPosition?.Invoke(this, EventArgs.Empty);
     }
+    
     public GridPosition GetGridPosition(Vector3 WorldPosition) => gridSystem.GetGridPosition(WorldPosition);
     public Vector3 GetWorldPosition(GridPosition gridPosition) => gridSystem.GetWorldPosition(gridPosition);
     public bool IsValidGridPosition(GridPosition gridPosition) => gridSystem.IsValidGridPosition(gridPosition);
@@ -110,5 +111,36 @@ public class LevelGrid : MonoBehaviour
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.GetTileType();
+    }
+
+    // Nuevo método para calcular la posición de formación de la unidad
+    public Vector3 GetUnitWorldPosition(Unit unit)
+    {
+        GridPosition gridPosition = unit.GetGridPosition();
+        GridObject gridObject = gridSystem.GetGridObject(gridPosition);
+        
+        List<Unit> unitList = gridObject.GetUnitList();
+        int unitIndex = unitList.IndexOf(unit);
+        int unitCount = unitList.Count;
+
+        Vector3 worldPosition = gridSystem.GetWorldPosition(gridPosition);
+
+        if (unitIndex == -1) return worldPosition;
+
+        float offsetAmount = 0.6f; // Distancia de separación (puedes ajustarla)
+
+        if (unitCount == 2)
+        {
+            if (unitIndex == 0) return worldPosition + new Vector3(-offsetAmount, 0, 0);
+            if (unitIndex == 1) return worldPosition + new Vector3(offsetAmount, 0, 0);
+        }
+        else if (unitCount >= 3)
+        {
+            if (unitIndex == 0) return worldPosition + new Vector3(0, 0, offsetAmount); // Frente
+            if (unitIndex == 1) return worldPosition + new Vector3(-offsetAmount, 0, -offsetAmount); // Atrás Izquierda
+            if (unitIndex == 2) return worldPosition + new Vector3(offsetAmount, 0, -offsetAmount); // Atrás Derecha
+        }
+
+        return worldPosition; // Centro si solo hay 1 unidad
     }
 }
