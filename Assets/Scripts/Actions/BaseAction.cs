@@ -85,4 +85,16 @@ public abstract class BaseAction : MonoBehaviour
     {
         return isActive;
     }
+    
+    // Nos dice si esta acción está actualmente esperando que el jugador elija un objetivo
+    public virtual bool IsAwaitingTargetSelection() 
+    {
+        return false; // Por defecto es falso para acciones como MoveAction o SpinAction
+    }
+
+    // Recibe la dirección del ciclado (1 para derecha/siguiente, -1 para izquierda/anterior)
+    public virtual void CycleTarget(int direction) 
+    {
+        // Por defecto no hace nada
+    }
 }

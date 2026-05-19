@@ -53,7 +53,7 @@ public class UnitActionSystem : MonoBehaviour
         }
 
         // 1. Probamos a cambiar de unidad con los botones (L1/R1)
-        if (HandleUnitCycling())
+        if (HandleTargetOrUnitCycling())
         {
             return;
         }
@@ -77,40 +77,57 @@ public class UnitActionSystem : MonoBehaviour
         }
     }
 
-    private bool HandleUnitCycling()
+    // 1. EL ORQUESTADOR: Este método debe ir en tu Update()
+    private bool HandleTargetOrUnitCycling()
     {
-        bool cycleLeft = InputManager.Instance.WasCycleLeftPressed();
-        bool cycleRight = InputManager.Instance.WasCycleRightPressed();
+        int cycleDirection = 0;
 
-        if (cycleLeft || cycleRight)
+        // Leemos el input una sola vez aquí arriba
+        if (InputManager.Instance.WasCycleRightPressed()) cycleDirection = 1;
+        else if (InputManager.Instance.WasCycleLeftPressed()) cycleDirection = -1;
+
+        if (cycleDirection == 0) return false; // Si no se presionó nada, no hacemos nada
+
+        // Evaluamos el contexto: ¿Estamos apuntando a algo o ciclando unidades?
+        if (selectedAction != null && selectedAction.IsAwaitingTargetSelection())
         {
-            List<Unit> friendlyUnits = UnitManager.Instance.GetFriendlyUnitList();
-            if (friendlyUnits.Count == 0) return false;
-
-            int currentIndex = friendlyUnits.IndexOf(selectedUnit);
-
-            if (cycleRight)
-            {
-                currentIndex = (currentIndex + 1) % friendlyUnits.Count;
-            }
-            else if (cycleLeft)
-            {
-                currentIndex = (currentIndex - 1 + friendlyUnits.Count) % friendlyUnits.Count;
-            }
-
-            Unit nextUnit = friendlyUnits[currentIndex];
-            SetSelectedUnit(nextUnit);
-
-            // Hacemos que el puntero salte hacia la unidad que acabamos de seleccionar
-            if (GridPointer.Instance != null)
-            {
-                GridPointer.Instance.SnapToGridPosition(nextUnit.GetGridPosition());
-            }
-
+            // Pasamos el control a la acción actual
+            selectedAction.CycleTarget(cycleDirection);
             return true;
+        }
+        else
+        {
+            // Usamos tu método adaptado pasándole la dirección
+            return CycleFriendlyUnitsGlobal(cycleDirection);
         }
 
         return false;
+    }
+
+    // 2. MÉTODO ADAPTADO: Ahora recibe la dirección (+1 o -1)
+    private bool CycleFriendlyUnitsGlobal(int direction)
+    {
+        List<Unit> friendlyUnits = UnitManager.Instance.GetFriendlyUnitList();
+        if (friendlyUnits.Count == 0) return false;
+
+        int currentIndex = friendlyUnits.IndexOf(selectedUnit);
+
+        // MÁGIA MATEMÁTICA: 
+        // Al usar 'direction' (+1 o -1) podemos hacerlo en una sola línea.
+        // Sumamos friendlyUnits.Count antes de hacer el módulo (%) para evitar 
+        // que C# nos devuelva índices negativos cuando direction es -1.
+        currentIndex = (currentIndex + direction + friendlyUnits.Count) % friendlyUnits.Count;
+
+        Unit nextUnit = friendlyUnits[currentIndex];
+        SetSelectedUnit(nextUnit);
+
+        // Hacemos que el puntero salte hacia la unidad que acabamos de seleccionar
+        if (GridPointer.Instance != null)
+        {
+            GridPointer.Instance.SnapToGridPosition(nextUnit.GetGridPosition());
+        }
+
+        return true;
     }
 
     private void HandleSelectedAction()
@@ -135,40 +152,64 @@ public class UnitActionSystem : MonoBehaviour
 
 
     public bool TryHandleUnitSelection()
+{
+    if (InputManager.Instance.WasConfirmPressedThisFrame())
     {
-        if (InputManager.Instance.WasConfirmPressedThisFrame())
+        GridPosition targetGridPosition;
+
+        // 1. Obtener la casilla seleccionada dependiendo del control activo.
+        // Necesitarás crear un método en tu InputManager que te diga si usas ratón.
+        if (InputManager.Instance.IsUsingMouse()) 
         {
-            // --- MÉTODO 1: Por Raycast (Click del ratón sobre el modelo 3D) ---
-            Ray ray = Camera.main.ScreenPointToRay(InputManager.Instance.GetMouseScreenPosition());
-            if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, unitLayer))
+            // Usa el script MouseWorld que ya tienes para obtener el punto 3D y convertirlo a GridPosition
+            targetGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition());
+        }
+        else 
+        {
+            targetGridPosition = GridPointer.Instance.GetGridPosition();
+        }
+
+        // 2. Buscar unidades en esa casilla
+        List<Unit> unitsOnTile = LevelGrid.Instance.GetUnitListAtGridPosition(targetGridPosition);
+
+        // Si no hay unidades en la casilla, devolvemos false para que el UnitActionSystem 
+        // sepa que puede intentar ejecutar una acción o deseleccionar.
+        if (unitsOnTile == null || unitsOnTile.Count == 0)
+        {
+            return false; 
+        }
+
+        // 3. Lógica de selección y ciclado
+        // Filtramos solo las unidades amigas
+        List<Unit> friendlyUnits = new List<Unit>();
+        foreach (Unit unit in unitsOnTile)
+        {
+            if (!unit.IsEnemy())
             {
-                if (hit.transform.TryGetComponent<Unit>(out Unit unit))
-                {
-                    if (unit == selectedUnit) return false;
-                    if (unit.IsEnemy()) return false;
-                    
-                    SetSelectedUnit(unit);
-                    return true;
-                }
-            }
-            
-            // --- MÉTODO 2: Por GridPointer (Mando / Confirmar sobre la casilla) ---
-            // Si el Raycast falló, intentamos seleccionar la unidad que esté en la casilla del GridPointer
-            GridPosition pointerGridPosition = GridPointer.Instance.GetGridPosition();
-            List<Unit> unitsOnTile = LevelGrid.Instance.GetUnitListAtGridPosition(pointerGridPosition);
-            
-            foreach(Unit unit in unitsOnTile)
-            {
-                if (!unit.IsEnemy() && unit != selectedUnit)
-                {
-                    SetSelectedUnit(unit);
-                    return true;
-                }
+                friendlyUnits.Add(unit);
             }
         }
 
-        return false;
+        if (friendlyUnits.Count > 0)
+        {
+            // Si la unidad que ya tenemos seleccionada está en esta casilla, pasamos a la siguiente
+            if (selectedUnit != null && friendlyUnits.Contains(selectedUnit))
+            {
+                int currentIndex = friendlyUnits.IndexOf(selectedUnit);
+                int nextIndex = (currentIndex + 1) % friendlyUnits.Count; // Vuelve al inicio si llega al final
+                SetSelectedUnit(friendlyUnits[nextIndex]);
+            }
+            else
+            {
+                // Si es una casilla nueva o no teníamos nada seleccionado, elegimos la primera
+                SetSelectedUnit(friendlyUnits[0]);
+            }
+            return true;
+        }
     }
+
+    return false;
+}
 
     private void SetBusy()
     {

@@ -7124,7 +7124,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 10
+      value: -3.75
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7132,7 +7132,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 10
+      value: -0.15193975
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7168,7 +7168,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3038457711198268232, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5215987335940856980, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: maxMoveDistance

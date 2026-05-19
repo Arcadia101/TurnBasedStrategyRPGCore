@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,6 +19,19 @@ public class InputManager : MonoBehaviour
 
         inputSystemActions = new InputSystem_Actions();
         inputSystemActions.Player.Enable();
+    }
+    
+
+    public bool IsUsingMouse() 
+    {
+        // Revisa si el último control activo pertenece al ratón
+        var lastDevice = InputSystem.devices.OrderByDescending(d => d.lastUpdateTime).FirstOrDefault();
+    
+        if (lastDevice is Mouse) 
+        {
+            return true;
+        }
+        return false;
     }
 
     public Vector2 GetPointerMoveVector()
