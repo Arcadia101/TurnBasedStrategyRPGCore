@@ -17,11 +17,42 @@ public class InputManager : MonoBehaviour
         }
         Instance = this;
 
+        // 1. Inicializamos el objeto del Input System aquí y en ningún otro lado
         inputSystemActions = new InputSystem_Actions();
-        inputSystemActions.Player.Enable();
+    
+        // 2. Por defecto, encendemos el mapa de Gameplay y apagamos el de Menús
+        SwitchToGameplayMap();
     }
     
+    private void OnEnable()
+    {
+        inputSystemActions.Enable();
+    }
 
+    private void OnDisable()
+    {
+        inputSystemActions.Disable();
+    }
+
+    // --- MÉTODOS DE CONMUTACIÓN DE CONTEXTO ---
+
+    public void SwitchToGameplayMap()
+    {
+        // Apagamos por completo el mapa que escucha el EventSystem de Unity
+        inputSystemActions.UI.Disable(); 
+    
+        // Encendemos el mapa que lee tu GridPointer, confirmaciones y ciclados
+        inputSystemActions.Player.Enable(); 
+    }
+
+    public void SwitchToMenuMap()
+    {
+        // Apagamos el movimiento del tablero y las acciones tácticas
+        inputSystemActions.Player.Disable(); 
+    
+        // Encendemos el mapa de UI para cuando el jugador abra una pausa o inventario
+        inputSystemActions.UI.Enable(); 
+    }
     public bool IsUsingMouse() 
     {
         // Revisa si el último control activo pertenece al ratón
@@ -47,6 +78,16 @@ public class InputManager : MonoBehaviour
     public bool WasCycleRightPressed()
     {
         return inputSystemActions.Player.CycleRight.WasPressedThisFrame();
+    }
+    
+    public bool WasCycleUpPressed()
+    {
+        return inputSystemActions.Player.CycleUp.WasPressedThisFrame();
+    }
+
+    public bool WasCycleDownPressed()
+    {
+        return inputSystemActions.Player.CycleDown.WasPressedThisFrame();
     }
     
     public Vector2 GetMouseScreenPosition()

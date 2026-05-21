@@ -6,12 +6,15 @@ public abstract class BaseAction : MonoBehaviour
 {
     public static event EventHandler OnAnyActionStarted;
     public static event EventHandler OnAnyActionCompleted;
+    public static event EventHandler OnAnyTargetCycled;
     
     protected Unit unit;
     protected bool isActive;
     protected Action onActionComplete;
     [SerializeField] protected int ActionPointsCost = 1;
-    
+    // Lista protegida para que las subclases la llenen
+    protected List<Unit> targetsInTile = new List<Unit>();
+    protected int currentTargetIndex = 0;
     
     protected virtual void Awake()
     {
@@ -86,15 +89,24 @@ public abstract class BaseAction : MonoBehaviour
         return isActive;
     }
     
-    // Nos dice si esta acción está actualmente esperando que el jugador elija un objetivo
-    public virtual bool IsAwaitingTargetSelection() 
+    public virtual bool IsAwaitingTargetSelection() => false;
+    
+    public virtual void CycleTarget(int direction)
     {
-        return false; // Por defecto es falso para acciones como MoveAction o SpinAction
+        if (targetsInTile.Count <= 1) return;
+        
+        currentTargetIndex = (currentTargetIndex + direction + targetsInTile.Count) % targetsInTile.Count;
+
+        Debug.Log("targuet changed to: " + targetsInTile[currentTargetIndex].name);
+        // Notificamos que el objetivo seleccionado dentro de la casilla cambió
+        OnAnyTargetCycled?.Invoke(this, EventArgs.Empty);
     }
 
-    // Recibe la dirección del ciclado (1 para derecha/siguiente, -1 para izquierda/anterior)
-    public virtual void CycleTarget(int direction) 
+    // Método para obtener el target seleccionado actualmente
+    public Unit GetTargetUnit()
     {
-        // Por defecto no hace nada
+        if (targetsInTile.Count > 0)
+            return targetsInTile[currentTargetIndex];
+        return null;
     }
 }

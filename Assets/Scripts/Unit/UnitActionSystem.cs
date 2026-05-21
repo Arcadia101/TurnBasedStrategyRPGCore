@@ -17,6 +17,7 @@ public class UnitActionSystem : MonoBehaviour
     [SerializeField] private LayerMask unitLayer;
     
     private BaseAction selectedAction;
+    private int currentActionIndex = 0; // Registra el índice de la acción seleccionada con el mando
     private bool isBusy;
 
     private void Awake()
@@ -37,44 +38,74 @@ public class UnitActionSystem : MonoBehaviour
 
     private void Update()
     {
+        // candado del Turno del Jugador e Interfaz de Usuario (UI)
+        if (!TurnSystem.Instance.IsPlayerTurn()) return;
+        if (EventSystem.current.IsPointerOverGameObject()) return;
+        
+        // --- NUEVO CANDADO INTELIGENTE (SEMI-BUSY) ---
         if (isBusy)
         {
-            return;
-        }
-
-        if (!TurnSystem.Instance.IsPlayerTurn())
-        {
-            return;
-        }
-
-        if (EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
-
-        // 1. Probamos a cambiar de unidad con los botones (L1/R1)
-        if (HandleTargetOrUnitCycling())
-        {
-            return;
-        }
-
-        // 2. Probamos a seleccionar una unidad nueva
-        if (TryHandleUnitSelection())
-        {
-            return;
-        }
-            
-        // 3. Ejecutamos la acción seleccionada
-        HandleSelectedAction();
-        
-        // 4. Si presionamos confirmar y no se ejecutó ni seleccionó nada, deseleccionamos
-        if (InputManager.Instance.WasConfirmPressedThisFrame())
-        {
-            if (selectedUnit != null)
+            // Si el sistema está ocupado, revisamos si la acción actual está esperando selección de blanco (Fase de Aiming)
+            if (selectedAction != null && selectedAction.IsAwaitingTargetSelection())
             {
-                SetSelectedUnit(null);
+                // ¡EXCEPCIÓN VIP! El juego está Busy, pero permitimos EXCLUSIVAMENTE el ciclado de objetivos
+                // y la segunda confirmación para disparar.
+                if (HandleTargetOrUnitCycling()) return;
+                if (TryHandleSelectedAction()) return;
             }
+
+            // Si está Busy y la acción NO está esperando objetivo (ej: la bala ya va volando o el personaje se está moviendo),
+            // bloqueamos por completo el input como siempre.
+            return; 
         }
+        
+        // --- FLUJO LIBRE DEL JUEGO (CUANDO ISBUSY ES FALSO) ---
+    
+        // 1. Ciclar entre las acciones disponibles de la unidad (Arriba/Abajo)
+        if (HandleActionCycling()) return;
+
+        // 2. Ciclar unidades aliadas de forma global (L1/R1 fuera de combate)
+        if (HandleTargetOrUnitCycling()) return;
+
+        // 3. Confirmar casilla táctica / Iniciar acción (Primer clic / Botón A)
+        if (TryHandleSelectedAction()) return;
+
+        // 4. Seleccionar una unidad directamente en la grid
+        if (TryHandleUnitSelection()) return;
+    
+        // 5. Deseleccionar si confirmamos en el vacío
+        if (InputManager.Instance.WasConfirmPressedThisFrame() && selectedUnit != null)
+        {
+            SetSelectedUnit(null);
+        }
+    }
+    
+    private bool HandleActionCycling()
+    {
+        int direction = 0;
+    
+        // Evaluamos tus nuevos métodos del InputManager para el mando/teclado
+        if (InputManager.Instance.WasCycleUpPressed()) direction = -1;    // Dirección hacia arriba en la barra
+        if (InputManager.Instance.WasCycleDownPressed()) direction = 1;   // Dirección hacia abajo en la barra
+
+        // Si no se presionó ningún botón de ciclo, salimos de inmediato
+        if (direction == 0) return false;
+
+        // Obtenemos el array de acciones que tiene la unidad seleccionada actualmente
+        BaseAction[] unitActionArray = selectedUnit.GetBaseActionArray();
+
+        // Si la unidad por alguna razón no tiene acciones (seguridad), salimos
+        if (unitActionArray.Length == 0) return false;
+
+        // Calculamos el nuevo índice usando la magia matemática del ciclo infinito
+        currentActionIndex = (currentActionIndex + direction + unitActionArray.Length) % unitActionArray.Length;
+
+        // Hacemos el cambio oficial de la acción activa en el sistema
+        BaseAction nextAction = unitActionArray[currentActionIndex];
+        SetSelectedAction(nextAction);
+
+        // Retornamos true porque el input fue consumido con éxito
+        return true;
     }
 
     // 1. EL ORQUESTADOR: Este método debe ir en tu Update()
@@ -89,19 +120,16 @@ public class UnitActionSystem : MonoBehaviour
         if (cycleDirection == 0) return false; // Si no se presionó nada, no hacemos nada
 
         // Evaluamos el contexto: ¿Estamos apuntando a algo o ciclando unidades?
+        // Si la acción activa dice que necesita elegir un objetivo, le cedemos el control
         if (selectedAction != null && selectedAction.IsAwaitingTargetSelection())
         {
             // Pasamos el control a la acción actual
             selectedAction.CycleTarget(cycleDirection);
-            return true;
+            return true; // El input fue consumido
         }
-        else
-        {
-            // Usamos tu método adaptado pasándole la dirección
-            return CycleFriendlyUnitsGlobal(cycleDirection);
-        }
-
-        return false;
+        
+        // Si no, ciclado global de unidades
+        return CycleFriendlyUnitsGlobal(cycleDirection);
     }
 
     // 2. MÉTODO ADAPTADO: Ahora recibe la dirección (+1 o -1)
@@ -130,7 +158,7 @@ public class UnitActionSystem : MonoBehaviour
         return true;
     }
 
-    private void HandleSelectedAction()
+    private bool TryHandleSelectedActionLegacy()
     {
         if (InputManager.Instance.WasConfirmPressedThisFrame())
         {
@@ -145,10 +173,74 @@ public class UnitActionSystem : MonoBehaviour
                     selectedAction.TakeAction(pointerGridPosition, UnsetBusy);
                     
                     OnActionStarted?.Invoke(this, EventArgs.Empty);
+                    
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    
+    private bool TryHandleSelectedAction()
+{
+    if (InputManager.Instance.WasConfirmPressedThisFrame())
+    {
+        // Obtenemos la posición lógica de la cuadrícula
+        GridPosition pointerGridPosition = GridPointer.Instance.GetGridPosition();
+
+        // =================================================================
+        // MOMENTO B (PASO 4 DEL FLUJO): SEGUNDA CONFIRMACIÓN (EL DISPARO)
+        // =================================================================
+        // Si ya hay una acción activa y está en modo Semi-Busy esperando objetivo...
+        if (selectedAction != null && selectedAction.IsAwaitingTargetSelection())
+        {
+            // Intentamos hacer un "cast" seguro a ShootAction para llamar a su confirmación manual
+            if (selectedAction is ShootAction shootAction)
+            {
+                if (shootAction.ConfirmSelectedTarget())
+                {
+                    // Retornamos true porque consumimos el input; el tiro ya va en camino y el
+                    // estado de ShootAction cambiará internamente a State.Shooting.
+                    return true; 
+                }
+            }
+            else if (selectedAction is HealAction healAction)
+            {
+                // Retornamos true porque consumimos el input; el tiro ya va en camino y el
+                // estado de ShootAction cambiará internamente a State.Healing.
+                if (healAction.ConfirmSelectedTarget()) return true;
+            }
+            // NOTA DE EXPANSION: Aquí añadir a futuro las otras acciones:
+            // else if (selectedAction is SwordAction swordAction) { ... } etc.
+        }
+
+        // =================================================================
+        // MOMENTO A (PASO 1 Y 2 DEL FLUJO): PRIMERA CONFIRMACIÓN (LA CASILLA)
+        // =================================================================
+        // Si no estamos ejecutando nada aún (la acción no está activa físicamente)...
+        if (selectedUnit != null && selectedAction != null && !selectedAction.IsActionActive())
+        {
+            // Validamos que la casilla seleccionada por el puntero sea elegible para la acción
+            if (selectedAction.IsValidActionGridPosition(pointerGridPosition))
+            {
+                // Intentamos cobrar los puntos de acción/movimiento
+                if (selectedUnit.TrySpendActionPointsOrMovePointsToTakeActionOrMove(selectedAction))
+                {
+                    SetBusy(); // Activamos el estado Busy del sistema inmediatamente
+                    
+                    // Iniciamos la acción física (esto pondrá a ShootAction en State.Aiming)
+                    selectedAction.TakeAction(pointerGridPosition, UnsetBusy);
+                    
+                    OnActionStarted?.Invoke(this, EventArgs.Empty);
+                    return true;
                 }
             }
         }
     }
+
+    return false;
+}
 
 
     public bool TryHandleUnitSelection()
