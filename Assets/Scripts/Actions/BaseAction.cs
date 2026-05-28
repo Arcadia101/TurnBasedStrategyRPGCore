@@ -109,4 +109,31 @@ public abstract class BaseAction : MonoBehaviour
             return targetsInTile[currentTargetIndex];
         return null;
     }
+    
+    protected Vector3 CalculateToroidWarpOffset(GridPosition fromPos, GridPosition toPos, ToroidLevelGrid toroidGrid)
+    {
+        int width = toroidGrid.GetWidth();
+        int height = toroidGrid.GetHeight();
+
+        int directionX = 0;
+        int directionZ = 0;
+
+        // CORRECCIÓN DE SIGNOS: Si vas de 0 a 4 (de izquierda a derecha), el offset físico 
+        // debe empujarte hacia la IZQUIERDA del espacio modular (-1) para simular que apareces por la derecha.
+        if (Mathf.Abs(fromPos.x - toPos.x) > 1)
+        {
+            directionX = fromPos.x < toPos.x ? -1 : 1;
+        }
+        if (Mathf.Abs(fromPos.z - toPos.z) > 1)
+        {
+            directionZ = fromPos.z < toPos.z ? -1 : 1;
+        }
+
+        // Obtenemos la orientación real a 45 grados de tu rejilla dual de octágonos
+        Vector3 cellDirX = toroidGrid.GetWorldPosition(new GridPosition(1, 0)) - toroidGrid.GetWorldPosition(new GridPosition(0, 0));
+        Vector3 cellDirZ = toroidGrid.GetWorldPosition(new GridPosition(0, 1)) - toroidGrid.GetWorldPosition(new GridPosition(0, 0));
+
+        // Retornamos el vector con la dirección corregida
+        return (cellDirX * (width * directionX)) + (cellDirZ * (height * directionZ));
+    }
 }

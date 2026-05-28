@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Pathfinding : MonoBehaviour
 {
-    public static Pathfinding Instance { get; private set; }
+    public static Pathfinding Instance { get; protected set; }
     
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 10;
@@ -56,7 +56,7 @@ public class Pathfinding : MonoBehaviour
         }
     }
 
-    public List<GridPosition> FindPath(GridPosition startGridPosition, GridPosition endGridPosition, out int pathLength)
+    public virtual List<GridPosition> FindPath(GridPosition startGridPosition, GridPosition endGridPosition, out int pathLength)
     {
         List<PathNode> openList = new List<PathNode>();
         List<PathNode> closedList = new List<PathNode>();
@@ -129,7 +129,7 @@ public class Pathfinding : MonoBehaviour
         return null;
     }
 
-    public int CalculateDistance(GridPosition gridPositionA, GridPosition gridPositionB)
+    public virtual int CalculateDistance(GridPosition gridPositionA, GridPosition gridPositionB)
     {
         GridPosition gridPositionDistance = gridPositionA - gridPositionB;
         int xDistance = Mathf.Abs(gridPositionDistance.x);
@@ -151,12 +151,12 @@ public class Pathfinding : MonoBehaviour
         return lowestFCostPathNode;
     }
 
-    private PathNode GetNode(int x, int z)
+    protected PathNode GetNode(int x, int z)
     {
         return gridSystem.GetGridObject(new GridPosition(x, z));
     }
     
-    private List<PathNode> GetNeighbourList(PathNode currentNode)
+    protected virtual List<PathNode> GetNeighbourList(PathNode currentNode)
     {
         List<PathNode> neighbourList = new List<PathNode>();
         GridPosition gridPosition = currentNode.GetGridPosition();
@@ -181,7 +181,7 @@ public class Pathfinding : MonoBehaviour
         return neighbourList;
     }
 
-    public List<GridPosition> GetReachableGridPositionList(GridPosition startGridPosition, int maxDistance)
+    public virtual List<GridPosition> GetReachableGridPositionList(GridPosition startGridPosition, int maxDistance)
     {
         List<GridPosition> reachableGridPositionList = new List<GridPosition>();
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class LevelGrid : MonoBehaviour
 {
-    public static LevelGrid Instance { get; private set; }
+    public static LevelGrid Instance { get; protected set; }
     
     public event EventHandler OnAnyUnitMovedGridPosition;
     
@@ -57,6 +57,8 @@ public class LevelGrid : MonoBehaviour
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.GetUnitList();
     }
+    
+    
 
     public void RemoveUnitAtGridPosition(GridPosition gridPosition, Unit unit)
     {
@@ -64,19 +66,18 @@ public class LevelGrid : MonoBehaviour
         gridObject.RemoveUnit(unit);
     }
 
-    public void UnitMovedGridPosition(Unit unit, GridPosition fromGridPosition, GridPosition toGridPosition)
+    public virtual void UnitMovedGridPosition(Unit unit, GridPosition fromGridPosition, GridPosition toGridPosition)
     {
         RemoveUnitAtGridPosition(fromGridPosition, unit);
         AddUnitAtGridPosition(toGridPosition, unit);
         OnAnyUnitMovedGridPosition?.Invoke(this, EventArgs.Empty);
     }
     
-    public GridPosition GetGridPosition(Vector3 WorldPosition) => gridSystem.GetGridPosition(WorldPosition);
-    public Vector3 GetWorldPosition(GridPosition gridPosition) => gridSystem.GetWorldPosition(gridPosition);
-    public bool IsValidGridPosition(GridPosition gridPosition) => gridSystem.IsValidGridPosition(gridPosition);
-    public int GetWidth() => gridSystem.GetWidth();
-    public int GetHeight() => gridSystem.GetHeight();
-
+    public virtual GridPosition GetGridPosition(Vector3 WorldPosition) => gridSystem.GetGridPosition(WorldPosition);
+    public virtual Vector3 GetWorldPosition(GridPosition gridPosition) => gridSystem.GetWorldPosition(gridPosition);
+    public virtual bool IsValidGridPosition(GridPosition gridPosition) => gridSystem.IsValidGridPosition(gridPosition);
+    public virtual int GetWidth() => gridSystem.GetWidth();
+    public virtual int GetHeight() => gridSystem.GetHeight();
     public bool HasAnyUnitOnGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
@@ -143,4 +144,6 @@ public class LevelGrid : MonoBehaviour
 
         return worldPosition; // Centro si solo hay 1 unidad
     }
+    
+    
 }

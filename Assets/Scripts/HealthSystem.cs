@@ -43,10 +43,12 @@ public class HealthSystem : MonoBehaviour
         
         OnDamaged?.Invoke(this, EventArgs.Empty);
         
-        /*if (health == maxHealth)
+        /*
+        */
+         if (health == maxHealth)
         {
             Die();
-        }*/
+        }
     }
     
     private void Die()

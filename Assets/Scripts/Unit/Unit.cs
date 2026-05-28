@@ -8,6 +8,9 @@ public class Unit : MonoBehaviour
     [SerializeField] private int maxMovePoints;
     [SerializeField] private bool isEnemy;
     
+    [Header("Grid Customization")]
+    [SerializeField] private GridType currentGridType = GridType.Normal;
+    
     private GridPosition gridPosition;
     private HealthSystem healthSystem;
     private BaseAction[] baseActionArray;
@@ -226,4 +229,14 @@ public class Unit : MonoBehaviour
         return healthSystem.GetHealthNormalized();
     }
     
+    // Métodos públicos para que las acciones puedan consultar o cambiar el estado
+    public GridType GetGridType() => currentGridType;
+    public void SetGridType(GridType newGridType) => currentGridType = newGridType;
+    
+}
+
+public enum GridType
+{
+    Normal,
+    Toroid
 }
