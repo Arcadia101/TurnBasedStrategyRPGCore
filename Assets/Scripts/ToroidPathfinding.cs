@@ -4,23 +4,62 @@ using UnityEngine;
 
 public class ToroidPathfinding : Pathfinding
 {
-    private void Awake()
+    public static ToroidPathfinding ToroidInstance { get; private set; } // Instancia única para el Toroide
+
+    protected override void Awake()
     {
-        // Al heredar, nos adueñamos de la instancia global polimórficamente
-        if (Instance != null)
+        // OMITIMOS base.Awake() intencionalmente para no pisar la instancia base
+    
+        if (ToroidInstance != null)
         {
-            Debug.LogError("There is already a Pathfinding (Toroid) in the scene!");
             Destroy(gameObject);
+            return;
         }
-        Instance = this;
+        ToroidInstance = this;
+
+        // Obtenemos los parámetros reales configurados en el componente del Toroide
+        int width = ToroidLevelGrid.ToroidInstance.GetWidth();
+        int height = ToroidLevelGrid.ToroidInstance.GetHeight();
+        float cellSize = ToroidLevelGrid.ToroidInstance.GetCellSize();
+    }
+    
+    public override void Setup(int width, int height, float cellSize)
+    {
+        // Seteamos las variables heredadas de la base para el Toroide
+        // (Nota: Si las variables en la base son privadas, cámbialas en Pathfinding.cs a 'protected' para que esta clase las pueda rellenar, ej: protected int width;)
+        base.Setup(width, height, cellSize);
+
+        // Sobreescribimos los nodos transitables (Obstáculos) usando de forma estricta la matemática del Toroide
+        for (int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < height; z++)
+            {
+                GridPosition gridPosition = new GridPosition(x, z);
+            
+                //Le pedimos la posición al Toroide
+                Vector3 worldPosition = ToroidLevelGrid.ToroidInstance.GetWorldPosition(gridPosition);
+            
+                float raycastOffsetDistance = 5f;
+                if (Physics.Raycast(worldPosition + Vector3.down * raycastOffsetDistance, Vector3.up,
+                        raycastOffsetDistance * 2, obstaclesLayerMask))
+                {
+                    GetNode(x, z).SetWalkable(false);
+                }
+                else
+                {
+                    // Nos aseguramos de restaurar como caminables los que no tengan obstáculos arriba
+                    GetNode(x, z).SetWalkable(true);
+                }
+            }
+        }
     }
 
     // --- 1. CÁLCULO DE DISTANCIA MODULAR (ATALOS PAC-MAN) ---
     public override int CalculateDistance(GridPosition gridPositionA, GridPosition gridPositionB)
     {
         // En una escena Toroidal, necesitamos la Grid para saber las dimensiones (ej: 5x5)
-        int width = ToroidLevelGrid.Instance.GetWidth();
-        int height = ToroidLevelGrid.Instance.GetHeight();
+        int width = ToroidLevelGrid.ToroidInstance.GetWidth();
+        int height = ToroidLevelGrid.ToroidInstance.GetHeight();
 
         // Distancia directa clásica
         int directX = Mathf.Abs(gridPositionA.x - gridPositionB.x);
@@ -47,8 +86,8 @@ public class ToroidPathfinding : Pathfinding
         List<PathNode> neighbourList = new List<PathNode>();
         GridPosition gridPosition = currentNode.GetGridPosition();
 
-        int width = ToroidLevelGrid.Instance.GetWidth();
-        int height = ToroidLevelGrid.Instance.GetHeight();
+        int width = ToroidLevelGrid.ToroidInstance.GetWidth();
+        int height = ToroidLevelGrid.ToroidInstance.GetHeight();
         bool isOctagon = (gridPosition.x + gridPosition.z) % 2 == 0;
 
         PathNode GetWrappedNode(int x, int z)
@@ -87,13 +126,17 @@ public class ToroidPathfinding : Pathfinding
         List<PathNode> openList = new List<PathNode>();
         List<PathNode> closedList = new List<PathNode>();
 
-        PathNode startNode = GetNode(startGridPosition.x, startGridPosition.z);
-        PathNode endNode = GetNode(endGridPosition.x, endGridPosition.z);
+        // Cambia esas dos líneas en FindPath por esto:
+        GridPosition wrappedStart = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(startGridPosition);
+        GridPosition wrappedEnd = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(endGridPosition);
+
+        PathNode startNode = GetNode(wrappedStart.x, wrappedStart.z);
+        PathNode endNode = GetNode(wrappedEnd.x, wrappedEnd.z);
         
         openList.Add(startNode);
 
-        int width = ToroidLevelGrid.Instance.GetWidth();
-        int height = ToroidLevelGrid.Instance.GetHeight();
+        int width = ToroidLevelGrid.ToroidInstance.GetWidth();
+        int height = ToroidLevelGrid.ToroidInstance.GetHeight();
 
         for (int x = 0; x < width; x++)
         {
@@ -196,8 +239,10 @@ private List<GridPosition> CalculatePath(PathNode endNode)
     {
         List<GridPosition> reachableGridPositionList = new List<GridPosition>();
 
-        // Usamos el método GetNode que heredamos de la base de forma segura
-        PathNode startNode = GetNode(startGridPosition.x, startGridPosition.z);
+        // ¡EL FIX DEFINITIVO! Envolvemos la posición inicial del personaje por si el frame 
+        // de movimiento llegó con un índice desfasado en los bordes del Toroide.
+        GridPosition wrappedStartPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(startGridPosition);
+        PathNode startNode = GetNode(wrappedStartPos.x, wrappedStartPos.z);
 
         Queue<PathNode> queue = new Queue<PathNode>();
         Dictionary<PathNode, int> distanceByNode = new Dictionary<PathNode, int>();
@@ -212,25 +257,26 @@ private List<GridPosition> CalculatePath(PathNode endNode)
 
             if (currentDistance >= maxDistance) continue;
 
-            // Llama automáticamente a tu GetNeighbourList() toroidal que ya loguea en consola
             foreach (PathNode neighbourNode in GetNeighbourList(currentNode))
             {
                 if (distanceByNode.ContainsKey(neighbourNode)) continue;
                 if (!neighbourNode.IsWalkable()) continue;
 
-                // Verificamos si se puede añadir la unidad usando la Grid del Toroide
+                // Extraemos la posición del vecino y la pasamos por la aritmética modular
                 GridPosition neighbourGridPosition = neighbourNode.GetGridPosition();
-                if (!LevelGrid.Instance.CanAddUnitAtGridPosition(neighbourGridPosition)) continue;
+                GridPosition wrappedNeighbourPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(neighbourGridPosition);
+                
+                if (!ToroidLevelGrid.ToroidInstance.CanAddUnitAtGridPosition(wrappedNeighbourPos)) continue;
 
-                // En el Toroide, cada paso a un vecino directo SIEMPRE cuesta exactamente 1 de distancia
                 int neighbourDistance = currentDistance + 1;
 
                 distanceByNode[neighbourNode] = neighbourDistance;
                 queue.Enqueue(neighbourNode);
             
-                if (!reachableGridPositionList.Contains(neighbourGridPosition))
+                // Almacenamos la posición envuelta en la lista de casillas alcanzables (cuadros azules)
+                if (!reachableGridPositionList.Contains(wrappedNeighbourPos))
                 {
-                    reachableGridPositionList.Add(neighbourGridPosition);
+                    reachableGridPositionList.Add(wrappedNeighbourPos);
                 }
             }
         }

@@ -4,24 +4,29 @@ using UnityEngine;
 
 public class LevelGrid : MonoBehaviour
 {
-    public static LevelGrid Instance { get; protected set; }
+    public static LevelGrid Instance { get; private set; }
     
     public event EventHandler OnAnyUnitMovedGridPosition;
     
-    [SerializeField] private int width = 5;
-    [SerializeField] private int height = 5;
-    [SerializeField] private float cellSize = 2.0f;
+    [SerializeField] protected int width = 5;
+    [SerializeField] protected int height = 5;
+    [SerializeField] protected float cellSize = 2.0f;
     
-    private GridSystem<GridObject> gridSystem;
+    protected GridSystem<GridObject> gridSystem;
     
-    private void Awake()
+    protected virtual void Awake()
     {
-        if (Instance != null)
+        // CONDICIÓN CLAVE: Solo se asigna si este script es un LevelGrid puro, no un hijo.
+        if (GetType() == typeof(LevelGrid))
         {
-            Debug.LogError("There is already a LevelGrid in the scene!");
-            Destroy(gameObject);
+            if (Instance != null)
+            {
+                Debug.LogError("¡Hay más de un LevelGrid base en la escena!");
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
         }
-        Instance = this;
 
         gridSystem = new GridSystem<GridObject>(width, height, cellSize, 
             (GridSystem<GridObject> g, GridPosition gridPosition) =>
@@ -52,7 +57,7 @@ public class LevelGrid : MonoBehaviour
         }
     }
     
-    public List<Unit> GetUnitListAtGridPosition(GridPosition gridPosition)
+    public virtual List<Unit> GetUnitListAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.GetUnitList();
@@ -78,7 +83,8 @@ public class LevelGrid : MonoBehaviour
     public virtual bool IsValidGridPosition(GridPosition gridPosition) => gridSystem.IsValidGridPosition(gridPosition);
     public virtual int GetWidth() => gridSystem.GetWidth();
     public virtual int GetHeight() => gridSystem.GetHeight();
-    public bool HasAnyUnitOnGridPosition(GridPosition gridPosition)
+    public virtual float GetCellSize() => gridSystem.GetCellSize();
+    public virtual bool HasAnyUnitOnGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.HasAnyUnit();
@@ -90,13 +96,13 @@ public class LevelGrid : MonoBehaviour
         return gridObject.CanAddUnit();
     }
     
-    public Unit GetUnitAtGridPosition(GridPosition gridPosition)
+    public virtual Unit GetUnitAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.GetUnit();
     }
 
-    public IInteractable GetInteractableAtGridPosition(GridPosition gridPosition)
+    public virtual IInteractable GetInteractableAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         return gridObject.GetInteractable();
@@ -115,7 +121,7 @@ public class LevelGrid : MonoBehaviour
     }
 
     // Nuevo método para calcular la posición de formación de la unidad
-    public Vector3 GetUnitWorldPosition(Unit unit)
+    public virtual Vector3 GetUnitWorldPosition(Unit unit)
     {
         GridPosition gridPosition = unit.GetGridPosition();
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
@@ -124,7 +130,7 @@ public class LevelGrid : MonoBehaviour
         int unitIndex = unitList.IndexOf(unit);
         int unitCount = unitList.Count;
 
-        Vector3 worldPosition = gridSystem.GetWorldPosition(gridPosition);
+        Vector3 worldPosition = GetWorldPosition(gridPosition);
 
         if (unitIndex == -1) return worldPosition;
 

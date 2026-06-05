@@ -82,7 +82,7 @@ public class SwordAction : BaseAction
 
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(gridPosition);
+        targetUnit = GetGridContext().GetUnitAtGridPosition(gridPosition);
         state = State.SwingingSwordBeforeHit;
         stateTimer = beforeHitStateTime;
         OnSwordActionStarted?.Invoke(this, EventArgs.Empty);
@@ -102,18 +102,18 @@ public class SwordAction : BaseAction
                 GridPosition offsetGridPosition = new GridPosition(x, z);
                 GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
 
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                if (!GetGridContext().IsValidGridPosition(testGridPosition))
                 {
                     continue;
                 }
                 
-                if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
+                if (!GetGridContext().HasAnyUnitOnGridPosition(testGridPosition))
                 {
                     //Grid position is empty, no Unit.
                     continue;
                 }
                 
-                Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(testGridPosition);
+                Unit targetUnit = GetGridContext().GetUnitAtGridPosition(testGridPosition);
 
                 if (targetUnit.IsEnemy() == unit.IsEnemy())
                 {

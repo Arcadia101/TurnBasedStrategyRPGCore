@@ -19,6 +19,11 @@ public class UnitActionSystem : MonoBehaviour
     private BaseAction selectedAction;
     private int currentActionIndex = 0; // Registra el índice de la acción seleccionada con el mando
     private bool isBusy;
+    
+    [Header("Grid Context Warp")]
+    private LevelGrid currentActiveGrid; // El mapa que el jugador está operando actualmente
+    
+    public LevelGrid GetCurrentActiveGrid() => currentActiveGrid;
 
     private void Awake()
     {
@@ -33,6 +38,9 @@ public class UnitActionSystem : MonoBehaviour
 
     private void Start()
     {
+        // Al arrancar el juego, por defecto el jugador opera en la Grid Normal
+        currentActiveGrid = LevelGrid.Instance;
+        
         SetSelectedUnit(selectedUnit);
     }
 
@@ -41,6 +49,11 @@ public class UnitActionSystem : MonoBehaviour
         // candado del Turno del Jugador e Interfaz de Usuario (UI)
         if (!TurnSystem.Instance.IsPlayerTurn()) return;
         if (EventSystem.current.IsPointerOverGameObject()) return;
+        
+        if (InputManager.Instance.WasSwitchGridPressed()) // <--- Reemplaza por tu método exacto del InputManager si se llama distinto
+        {
+            SwitchGridContextWarp();
+        }
         
         // --- NUEVO CANDADO INTELIGENTE (SEMI-BUSY) ---
         if (isBusy)
@@ -77,6 +90,29 @@ public class UnitActionSystem : MonoBehaviour
         if (InputManager.Instance.WasConfirmPressedThisFrame() && selectedUnit != null)
         {
             SetSelectedUnit(null);
+        }
+    }
+    
+    private void SwitchGridContextWarp()
+    {
+        if (ToroidLevelGrid.ToroidInstance == null) return;
+
+        // Intercambiamos el contexto de la Grid activa
+        if (currentActiveGrid == LevelGrid.Instance)
+        {
+            currentActiveGrid = ToroidLevelGrid.ToroidInstance;
+            Debug.Log("[WARP-SISTEMA] Cambiando a Grid TOROIDAL.");
+        }
+        else
+        {
+            currentActiveGrid = LevelGrid.Instance;
+            Debug.Log("[WARP-SISTEMA] Cambiando a Grid NORMAL.");
+        }
+
+        // Le avisamos al GridPointer que re-ajuste su posición física de inmediato a la nueva Grid
+        if (GridPointer.Instance != null)
+        {
+            GridPointer.Instance.RefreshGridContext(currentActiveGrid);
         }
     }
     
@@ -254,7 +290,7 @@ public class UnitActionSystem : MonoBehaviour
         if (InputManager.Instance.IsUsingMouse()) 
         {
             // Usa el script MouseWorld que ya tienes para obtener el punto 3D y convertirlo a GridPosition
-            targetGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition());
+            targetGridPosition = currentActiveGrid.GetGridPosition(MouseWorld.GetPosition());
         }
         else 
         {
@@ -262,7 +298,7 @@ public class UnitActionSystem : MonoBehaviour
         }
 
         // 2. Buscar unidades en esa casilla
-        List<Unit> unitsOnTile = LevelGrid.Instance.GetUnitListAtGridPosition(targetGridPosition);
+        List<Unit> unitsOnTile = currentActiveGrid.GetUnitListAtGridPosition(targetGridPosition);
 
         // Si no hay unidades en la casilla, devolvemos false para que el UnitActionSystem 
         // sepa que puede intentar ejecutar una acción o deseleccionar.

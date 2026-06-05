@@ -4,31 +4,34 @@ using UnityEngine;
 
 public class Pathfinding : MonoBehaviour
 {
-    public static Pathfinding Instance { get; protected set; }
+    public static Pathfinding Instance { get; private set; }
     
     private const int MOVE_STRAIGHT_COST = 10;
     private const int MOVE_DIAGONAL_COST = 10;
     
-    [SerializeField] private Transform gridDebugObjectPrefab;
-    [SerializeField] private LayerMask obstaclesLayerMask;
+    [SerializeField] protected Transform gridDebugObjectPrefab;
+    [SerializeField] protected LayerMask obstaclesLayerMask;
     
 
-    private int width;
-    private int height;
-    private float cellSize;
-    private GridSystem<PathNode> gridSystem;
+    protected int width;
+    protected int height;
+    protected float cellSize;
+    protected GridSystem<PathNode> gridSystem;
 
-    private void Awake()
+    protected virtual void Awake()
     {
-        if (Instance != null)
+        if (GetType() == typeof(Pathfinding))
         {
-            Debug.LogError("There is already a Pathfinding in the scene!");
-            Destroy(gameObject);
+            if (Instance != null)
+            {
+                Debug.LogError("¡Hay más de un Pathfinding base en la escena!");
+                Destroy(gameObject);
+                return;
+            }
+            Instance = this;
         }
-        Instance = this;
     }
-
-    public void Setup(int width, int height, float cellSize)
+    public virtual void Setup(int width, int height, float cellSize)
     {
         this.width = width;
         this.height = height;

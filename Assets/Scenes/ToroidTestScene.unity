@@ -9216,8 +9216,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveAction
   ActionPointsCost: 1
-  moveSpeed: 3
-  rotateSpeed: 50
   maxMoveDistance: 1
 --- !u!114 &4370108846990029456
 MonoBehaviour:
@@ -9475,8 +9473,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveAction
   ActionPointsCost: 1
-  moveSpeed: 5
-  rotateSpeed: 50
   maxMoveDistance: 8
 --- !u!1 &5232977955856646432
 GameObject:
@@ -9817,6 +9813,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6523539925494918150}
   - component: {fileID: 9044089905713720450}
+  - component: {fileID: 9113556738744559571}
   - component: {fileID: 6165858750649232274}
   - component: {fileID: 8090767034879426637}
   - component: {fileID: 4237452803316463516}
@@ -12222,6 +12219,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ToroidUnitMover
   speed: 5
+--- !u!114 &9113556738744559571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6378884017334059072}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e78afb7796eab14f872e68d2dc577c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitMotor
+  moveSpeed: 4
+  rotateSpeed: 10
 --- !u!4 &9163348752643143128
 Transform:
   m_ObjectHideFlags: 0

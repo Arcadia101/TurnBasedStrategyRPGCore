@@ -13,6 +13,8 @@ public class GridPointer : MonoBehaviour
     private float pointerMoveTimer;
     private const float POINTER_MOVE_SPEED = 0.15f; // Ligeramente más rápido para un control de 8 direcciones más ágil
 
+    private LevelGrid activeGrid;
+    
     private void Awake()
     {
         if (Instance != null)
@@ -26,12 +28,21 @@ public class GridPointer : MonoBehaviour
 
     private void Start()
     {
+        // Al arrancar, se sincroniza con la Grid por defecto del UnitActionSystem
+        activeGrid = LevelGrid.Instance;
+        
         currentGridPosition = new GridPosition(LevelGrid.Instance.GetWidth() / 2, LevelGrid.Instance.GetHeight() / 2);
         UpdatePointerPosition();
     }
 
     void Update()
     {
+        // Nos aseguramos de estar escuchando siempre la Grid que el sistema tenga activa
+        if (UnitActionSystem.Instance != null)
+        {
+            activeGrid = UnitActionSystem.Instance.GetCurrentActiveGrid();
+        }
+        
         Vector2 currentMousePosition = InputManager.Instance.GetMouseScreenPosition();
         
         // Prioridad 1: Ratón
@@ -40,8 +51,8 @@ public class GridPointer : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(currentMousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, float.MaxValue, mousePlaneLayer))
             {
-                GridPosition targetPosition = LevelGrid.Instance.GetGridPosition(hit.point);
-                if (LevelGrid.Instance.IsValidGridPosition(targetPosition))
+                GridPosition targetPosition = activeGrid.GetGridPosition(hit.point);
+                if (activeGrid.IsValidGridPosition(targetPosition))
                 {
                     currentGridPosition = targetPosition;
                 }
@@ -82,15 +93,15 @@ public class GridPointer : MonoBehaviour
                         new GridPosition(1, 1), new GridPosition(1, -1), new GridPosition(-1, 1), new GridPosition(-1, -1)
                     };
 
-                    Vector3 currentWorldPos = LevelGrid.Instance.GetWorldPosition(currentGridPosition);
+                    Vector3 currentWorldPos = activeGrid.GetWorldPosition(currentGridPosition);
 
                     foreach (GridPosition offset in neighborOffsets)
                     {
                         GridPosition neighborPos = currentGridPosition + offset;
                         
-                        if (!LevelGrid.Instance.IsValidGridPosition(neighborPos)) continue;
+                        if (!activeGrid.IsValidGridPosition(neighborPos)) continue;
 
-                        Vector3 neighborWorldPos = LevelGrid.Instance.GetWorldPosition(neighborPos);
+                        Vector3 neighborWorldPos = activeGrid.GetWorldPosition(neighborPos);
                         Vector3 directionToNeighbor = (neighborWorldPos - currentWorldPos).normalized;
 
                         // El Dot Product nos dice cuán alineadas están dos direcciones (1 es perfecto, 0 es perpendicular, -1 es opuesto)
@@ -124,8 +135,15 @@ public class GridPointer : MonoBehaviour
 
     private void UpdatePointerPosition()
     {
-        Vector3 targetWorldPos = LevelGrid.Instance.GetWorldPosition(currentGridPosition);
+        Vector3 targetWorldPos = activeGrid.GetWorldPosition(currentGridPosition);
         transform.position = Vector3.Lerp(transform.position, targetWorldPos, Time.deltaTime * 20f); // Un Lerp un poco más rápido para las 8 direcciones
+    }
+    
+    public void RefreshGridContext(LevelGrid newGrid)
+    {
+        activeGrid = newGrid;
+        // Mantenemos la misma 'currentGridPosition' (ej: 1,3), pero recalculamos instantáneamente su posición física en metros
+        transform.position = activeGrid.GetWorldPosition(currentGridPosition);
     }
 
     public GridPosition GetGridPosition()
@@ -135,10 +153,10 @@ public class GridPointer : MonoBehaviour
 
     public void SnapToGridPosition(GridPosition newGridPosition)
     {
-        if (LevelGrid.Instance.IsValidGridPosition(newGridPosition))
+        if (activeGrid.IsValidGridPosition(newGridPosition))
         {
             currentGridPosition = newGridPosition;
-            transform.position = LevelGrid.Instance.GetWorldPosition(currentGridPosition);
+            transform.position = activeGrid.GetWorldPosition(currentGridPosition);
         }
     }
 }

@@ -37,26 +37,29 @@ public class GridSystemVisual : MonoBehaviour
         public Color color;
     }
     
-    [SerializeField] private Transform octagonVisualPrefab;
-    [SerializeField] private Transform rhombusVisualPrefab;
-    [SerializeField] private bool showGridCoordinates = false;
-    [SerializeField] private GridVisualTypeColor[] gridVisualTypeColorList;
+    [SerializeField] protected Transform octagonVisualPrefab;
+    [SerializeField] protected Transform rhombusVisualPrefab;
+    [SerializeField] protected bool showGridCoordinates = false;
+    [SerializeField] protected GridVisualTypeColor[] gridVisualTypeColorList;
     
-    private GridSystemVisualSingle[,] gridSystemVisualSingleArray;
+    protected GridSystemVisualSingle[,] gridSystemVisualSingleArray;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         if (Instance != null)
         {
-            Debug.LogError("There is already a GridSystemVisual in the scene!");
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
-    void Start()
+    protected virtual void Start()
+    {
+        InitializeGridVisuals();
+    }
+
+    protected virtual void InitializeGridVisuals()
     {
         gridSystemVisualSingleArray = new GridSystemVisualSingle[LevelGrid.Instance.GetWidth(), LevelGrid.Instance.GetHeight()];
         for (int x = 0; x < LevelGrid.Instance.GetWidth(); x++)
@@ -84,67 +87,7 @@ public class GridSystemVisual : MonoBehaviour
         UpdateGridVisual();
     }
 
-    void UpdateGridVisual()
-    {
-        ResetAllGridPositions();
-        
-        Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
-        if (selectedUnit == null) return;
-
-        BaseAction selectedAction = UnitActionSystem.Instance.GetSelectedAction();
-        if (selectedAction == null) return;
-
-        GridVisualType gridVisualType;
-        switch (selectedAction)
-        {
-            default:
-            case MoveAction moveAction:
-                gridVisualType = GridVisualType.Blue;
-                break;
-            case HealAction healAction:
-                gridVisualType = GridVisualType.Blue;
-                break;
-            case ShootAction shootAction:
-                gridVisualType = GridVisualType.Red;
-                ShowGridPositionRange(selectedUnit.GetGridPosition(), shootAction.GetMaxShootDistance(), GridVisualType.RedSoft);
-                break;
-            case GrenadeAction grenadeAction:
-                gridVisualType = GridVisualType.Green;
-                break;
-            case SwordAction swordAction:
-                gridVisualType = GridVisualType.Brown;
-                ShowGridPositionRangeSquare(selectedUnit.GetGridPosition(), swordAction.GetMaxSwordDistance(), GridVisualType.BrownSoft);
-                break;
-            case InteractAction interactAction:
-                gridVisualType = GridVisualType.Blue;
-                break;
-        }
-        
-        ShowGridPositionList(selectedAction.GetValidActionGridPositionList(), gridVisualType);
-    }
-
-    public void ResetAllGridPositions()
-    {
-        for (int x = 0; x < LevelGrid.Instance.GetWidth(); x++)
-        {
-            for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++)
-            {
-                if(gridSystemVisualSingleArray[x,z] != null)
-                    gridSystemVisualSingleArray[x,z].ResetToDefaultColor();
-            }
-        }
-    }
-    
-    public void ShowGridPositionList(List<GridPosition> gridPositionList, GridVisualType gridVisualType = GridVisualType.White)
-    {
-        foreach (GridPosition gridPosition in gridPositionList)  
-        {
-            if(gridSystemVisualSingleArray[gridPosition.x, gridPosition.z] != null)
-                gridSystemVisualSingleArray[gridPosition.x, gridPosition.z].SetColor(GetGridVisualColor(gridVisualType));
-        }
-    }
-
-    private void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType = GridVisualType.White)
+    protected void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType = GridVisualType.White)
     {
         List<GridPosition> gridPositionList = new List<GridPosition>();
         
@@ -164,7 +107,7 @@ public class GridSystemVisual : MonoBehaviour
         ShowGridPositionList(gridPositionList, gridVisualType);
     }
     
-    private void ShowGridPositionRangeSquare(GridPosition gridPosition, int range, GridVisualType gridVisualType = GridVisualType.White)
+    protected void ShowGridPositionRangeSquare(GridPosition gridPosition, int range, GridVisualType gridVisualType = GridVisualType.White)
     {
         List<GridPosition> gridPositionList = new List<GridPosition>();
         
@@ -181,17 +124,17 @@ public class GridSystemVisual : MonoBehaviour
         ShowGridPositionList(gridPositionList, gridVisualType);
     }
 
-    private void UnitActionSystem_OnSelectedActionChanged(object sender, EventArgs e)
+    protected void UnitActionSystem_OnSelectedActionChanged(object sender, EventArgs e)
     {
         UpdateGridVisual();
     }
     
-    private void LevelGrid_OnAnyUnitMovedGridPosition(object sender, EventArgs e)
+    protected void LevelGrid_OnAnyUnitMovedGridPosition(object sender, EventArgs e)
     {
         UpdateGridVisual();
     }
 
-    private Color GetGridVisualColor(GridVisualType gridVisualType)
+    protected Color GetGridVisualColor(GridVisualType gridVisualType)
     {
         foreach (GridVisualTypeColor gridVisualTypeColor in gridVisualTypeColorList)
         {
@@ -202,5 +145,133 @@ public class GridSystemVisual : MonoBehaviour
         }
         Debug.LogError("GridVisualTypeColor not found for GridVisualType!" + gridVisualType);
         return Color.white;
+    }
+    
+    protected virtual void UpdateGridVisual()
+    {
+        ResetAllGridPositions();
+        
+        Unit selectedUnit = UnitActionSystem.Instance.GetSelectedUnit();
+        if (selectedUnit == null) return;
+
+        BaseAction selectedAction = UnitActionSystem.Instance.GetSelectedAction();
+        if (selectedAction == null) return;
+
+        // ¡EL CAMBIO CLAVE! Obtenemos la Grid real de la acción (Normal o Toroidal)
+        LevelGrid activeGrid = selectedAction.GetGridContext();
+
+        GridVisualType gridVisualType;
+        switch (selectedAction)
+        {
+            default:
+            case MoveAction moveAction:
+                gridVisualType = GridVisualType.Blue;
+                break;
+            case HealAction healAction:
+                gridVisualType = GridVisualType.Blue;
+                break;
+            case ShootAction shootAction:
+                gridVisualType = GridVisualType.Red;
+                // Le pasamos la 'activeGrid' al dibujador de rango
+                ShowGridPositionRange(selectedUnit.GetGridPosition(), shootAction.GetMaxShootDistance(), GridVisualType.RedSoft, activeGrid);
+                break;
+            case GrenadeAction grenadeAction:
+                gridVisualType = GridVisualType.Green;
+                break;
+            case SwordAction swordAction:
+                gridVisualType = GridVisualType.Brown;
+                // Le pasamos la 'activeGrid' al dibujador de rango
+                ShowGridPositionRangeSquare(selectedUnit.GetGridPosition(), swordAction.GetMaxSwordDistance(), GridVisualType.BrownSoft, activeGrid);
+                break;
+            case InteractAction interactAction:
+                gridVisualType = GridVisualType.Blue;
+                break;
+        }
+        
+        ShowGridPositionList(selectedAction.GetValidActionGridPositionList(), gridVisualType);
+    }
+
+    // CORRECCIÓN: Usamos las dimensiones de la grid de este visualizador (evita desbordes)
+    public void ResetAllGridPositions()
+    {
+        int width = gridSystemVisualSingleArray.GetLength(0);
+        int height = gridSystemVisualSingleArray.GetLength(1);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < height; z++)
+            {
+                if(gridSystemVisualSingleArray[x,z] != null)
+                    gridSystemVisualSingleArray[x,z].ResetToDefaultColor();
+            }
+        }
+    }
+    
+    public void ShowGridPositionList(List<GridPosition> gridPositionList, GridVisualType gridVisualType = GridVisualType.White)
+    {
+        foreach (GridPosition gridPosition in gridPositionList)  
+        {
+            // CONTROL DE SEGURIDAD: Validamos que la casilla esté dentro de los límites de NUESTRO array visual antes de pintar
+            if (gridPosition.x >= 0 && gridPosition.z >= 0 && 
+                gridPosition.x < gridSystemVisualSingleArray.GetLength(0) && 
+                gridPosition.z < gridSystemVisualSingleArray.GetLength(1))
+            {
+                if(gridSystemVisualSingleArray[gridPosition.x, gridPosition.z] != null)
+                    gridSystemVisualSingleArray[gridPosition.x, gridPosition.z].SetColor(GetGridVisualColor(gridVisualType));
+            }
+        }
+    }
+
+    // CORRECCIÓN: Recibe la Grid activa para validar la casilla usando el contexto correcto
+    protected void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType, LevelGrid activeGrid)
+    {
+        List<GridPosition> gridPositionList = new List<GridPosition>();
+        
+        for (int x = -range; x <= range; x++)
+        {
+            for (int z = -range; z <= range; z++)
+            {
+                GridPosition testGridPosition = gridPosition + new GridPosition(x, z);
+                
+                // Si estamos en un Toroide, envolvemos la casilla de rango suave (Pac-Man) antes de validarla
+                if (activeGrid is ToroidLevelGrid toroidGrid)
+                {
+                    testGridPosition = toroidGrid.GetWrappedGridPosition(testGridPosition);
+                }
+
+                if (!activeGrid.IsValidGridPosition(testGridPosition)) continue;
+                
+                int testDistance = Math.Abs(x) + Math.Abs(z);
+                if (testDistance > range) continue;
+                
+                gridPositionList.Add(testGridPosition);
+            }
+        }
+        ShowGridPositionList(gridPositionList, gridVisualType);
+    }
+    
+    // CORRECCIÓN: Recibe la Grid activa para validar la casilla usando el contexto correcto
+    protected void ShowGridPositionRangeSquare(GridPosition gridPosition, int range, GridVisualType gridVisualType, LevelGrid activeGrid)
+    {
+        List<GridPosition> gridPositionList = new List<GridPosition>();
+        
+        for (int x = -range; x <= range; x++)
+        {
+            for (int z = -range; z <= range; z++)
+            {
+                GridPosition testGridPosition = gridPosition + new GridPosition(x, z);
+                
+                // Si estamos en un Toroide, envolvemos la casilla de rango suave de la espada (Pac-Man)
+                if (activeGrid is ToroidLevelGrid toroidGrid)
+                {
+                    testGridPosition = toroidGrid.GetWrappedGridPosition(testGridPosition);
+                }
+
+                if (!activeGrid.IsValidGridPosition(testGridPosition)) continue;
+                
+                gridPositionList.Add(testGridPosition);
+            }
+        }
+        ShowGridPositionList(gridPositionList, gridVisualType);
     }
 }

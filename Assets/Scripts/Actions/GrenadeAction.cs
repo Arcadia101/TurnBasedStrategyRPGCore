@@ -51,7 +51,7 @@ public class GrenadeAction : BaseAction
                 GridPosition offsetGridPosition = new GridPosition(x, z);
                 GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
 
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition))
+                if (!GetGridContext().IsValidGridPosition(testGridPosition))
                 {
                     continue;
                 }
@@ -66,13 +66,13 @@ public class GrenadeAction : BaseAction
                 //validGridPositionList.Add(testGridPosition);
                 
                 /*
-                if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition))
+                if (!GetGridContext().HasAnyUnitOnGridPosition(testGridPosition))
                 {
                     //Grid position is empty, no Unit.
                     continue;
                 }
                 
-                Unit targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(testGridPosition);
+                Unit targetUnit = GetGridContext().GetUnitAtGridPosition(testGridPosition);
 
                 if (targetUnit.IsEnemy() == unit.IsEnemy())
                 {
@@ -80,7 +80,7 @@ public class GrenadeAction : BaseAction
                     continue;
                 }
 
-                Vector3 UnitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);
+                Vector3 UnitWorldPosition = GetGridContext().GetWorldPosition(unitGridPosition);
                 Vector3 shootDir = (targetUnit.GetWorldPosition() - UnitWorldPosition).normalized;
                 float unitShoulderHeight = 1.7f;
                 if (Physics.Raycast(UnitWorldPosition + Vector3.up * unitShoulderHeight, shootDir,

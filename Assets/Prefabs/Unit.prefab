@@ -805,6 +805,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6173891613177242039}
   - component: {fileID: 8261108682759184691}
+  - component: {fileID: 5895225979318139881}
   - component: {fileID: 6536924919189268003}
   - component: {fileID: 9182409222316314108}
   - component: {fileID: 3884391607846025773}
@@ -855,6 +856,21 @@ MonoBehaviour:
   maxActionPoints: 0
   maxMovePoints: 0
   isEnemy: 0
+  currentGridType: 0
+--- !u!114 &5895225979318139881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e78afb7796eab14f872e68d2dc577c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitMotor
+  moveSpeed: 4
+  rotateSpeed: 10
 --- !u!114 &6536924919189268003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -898,8 +914,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MoveAction
   ActionPointsCost: 1
-  moveSpeed: 5
-  rotateSpeed: 50
   maxMoveDistance: 1
 --- !u!114 &5721112675720794914
 MonoBehaviour:
@@ -914,6 +928,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpinAction
   ActionPointsCost: 1
+  maxHealDistance: 5
+  healAmount: 30
+  aimingTime: 0.1
+  healTime: 0.1
+  cooloffTime: 0.5
+  rotateSpeed: 10
 --- !u!114 &5369258130610472144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -982,6 +1002,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3fb0c1b188df874fb44e9df02a39c8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InteractAction
+  ActionPointsCost: 1
+  maxInteractDistance: 1
 --- !u!65 &1605937745382352134
 BoxCollider:
   m_ObjectHideFlags: 0

@@ -136,4 +136,10 @@ public abstract class BaseAction : MonoBehaviour
         // Retornamos el vector con la dirección corregida
         return (cellDirX * (width * directionX)) + (cellDirZ * (height * directionZ));
     }
+    
+    public LevelGrid GetGridContext()
+    {
+        // Le pide el contexto a la unidad (que ya modificamos ayer para que use su propio mapa)
+        return unit.GetGridContext(); 
+    }
 }

@@ -140,7 +140,7 @@ public class HealAction : BaseAction
         currentTargetIndex = 0;
 
         // Escaneamos la casilla para buscar objetivos válidos
-        List<Unit> unitsOnTile = LevelGrid.Instance.GetUnitListAtGridPosition(gridPosition);
+        List<Unit> unitsOnTile = GetGridContext().GetUnitListAtGridPosition(gridPosition);
         foreach (Unit tileUnit in unitsOnTile)
         {
             // NUEVO FILTRO DE SOPORTE: Solo unidades del MISMO bando/equipo
@@ -205,15 +205,15 @@ public class HealAction : BaseAction
                 GridPosition offsetGridPosition = new GridPosition(x, z);
                 GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
 
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition)) continue;
+                if (!GetGridContext().IsValidGridPosition(testGridPosition)) continue;
                 
                 int testDistance = Math.Abs(x) + Math.Abs(z);
                 if (testDistance > maxHealDistance) continue;
                 
                 // Si no hay ninguna unidad en la casilla, no nos interesa para curar
-                if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition)) continue;
+                if (!GetGridContext().HasAnyUnitOnGridPosition(testGridPosition)) continue;
                 
-                List<Unit> unitsAtGridPosition = LevelGrid.Instance.GetUnitListAtGridPosition(testGridPosition);
+                List<Unit> unitsAtGridPosition = GetGridContext().GetUnitListAtGridPosition(testGridPosition);
                 bool foundValidAlly = false;
 
                 foreach (Unit potentialAlly in unitsAtGridPosition)
@@ -239,7 +239,7 @@ public class HealAction : BaseAction
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
     {
         // Lógica para que la Inteligencia Artificial enemiga también pueda curar a sus aliados
-        List<Unit> unitsAtGridPosition = LevelGrid.Instance.GetUnitListAtGridPosition(gridPosition);
+        List<Unit> unitsAtGridPosition = GetGridContext().GetUnitListAtGridPosition(gridPosition);
         Unit bestTargetForAI = unitsAtGridPosition.Find(u => u.IsEnemy() == unit.IsEnemy());
 
         if (bestTargetForAI == null) return null;

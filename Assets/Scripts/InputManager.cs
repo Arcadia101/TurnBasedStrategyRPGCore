@@ -104,6 +104,11 @@ public class InputManager : MonoBehaviour
         */
     }
 
+    public bool WasSwitchGridPressed()
+    {
+        return inputSystemActions.Player.SwitchGrid.WasPressedThisFrame();
+    }
+
     public Vector2 GetCameraMoveVector()
     {
         return inputSystemActions.Player.CameraMovement.ReadValue<Vector2>();

@@ -128,7 +128,7 @@ public class ShootAction : BaseAction
         currentTargetIndex = 0;
 
         // Escaneamos la casilla para rellenar los objetivos disponibles
-        List<Unit> unitsOnTile = LevelGrid.Instance.GetUnitListAtGridPosition(gridPosition);
+        List<Unit> unitsOnTile = GetGridContext().GetUnitListAtGridPosition(gridPosition);
         foreach (Unit tileUnit in unitsOnTile)
         {
             // Filtro: Solo unidades del equipo contrario (como mueren y se destruyen al instante, no hace falta comprobar vida)
@@ -191,7 +191,7 @@ public class ShootAction : BaseAction
     public List<GridPosition> GetValidActionGridPositionList(GridPosition unitGridPosition)
     {
         List<GridPosition> validGridPositionList = new List<GridPosition>();
-        Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);
+        Vector3 unitWorldPosition = GetGridContext().GetWorldPosition(unitGridPosition);
         float unitShoulderHeight = 1.7f;
         
         for (int x = -maxShootDistance; x <= maxShootDistance; x++)
@@ -201,15 +201,15 @@ public class ShootAction : BaseAction
                 GridPosition offsetGridPosition = new GridPosition(x, z);
                 GridPosition testGridPosition = unitGridPosition + offsetGridPosition;
 
-                if (!LevelGrid.Instance.IsValidGridPosition(testGridPosition)) continue;
+                if (!GetGridContext().IsValidGridPosition(testGridPosition)) continue;
                 
                 int testDistance = Math.Abs(x) + Math.Abs(z);
                 if (testDistance > maxShootDistance) continue;
                 
-                if (!LevelGrid.Instance.HasAnyUnitOnGridPosition(testGridPosition)) continue;
+                if (!GetGridContext().HasAnyUnitOnGridPosition(testGridPosition)) continue;
                 
                 // Evaluamos si al menos una de las unidades en la casilla dual es un enemigo visible
-                List<Unit> unitsAtGridPosition = LevelGrid.Instance.GetUnitListAtGridPosition(testGridPosition);
+                List<Unit> unitsAtGridPosition = GetGridContext().GetUnitListAtGridPosition(testGridPosition);
                 bool foundValidTarget = false;
 
                 foreach (Unit potentialTarget in unitsAtGridPosition)
@@ -244,7 +244,7 @@ public class ShootAction : BaseAction
     public override EnemyAIAction GetEnemyAIAction(GridPosition gridPosition)
     {
         // La IA selecciona automáticamente al primer enemigo válido en la casilla y calcula su valor
-        List<Unit> unitsAtGridPosition = LevelGrid.Instance.GetUnitListAtGridPosition(gridPosition);
+        List<Unit> unitsAtGridPosition = GetGridContext().GetUnitListAtGridPosition(gridPosition);
         Unit bestTargetForAI = unitsAtGridPosition.Find(u => u.IsEnemy() != unit.IsEnemy());
 
         if (bestTargetForAI == null) return null;
