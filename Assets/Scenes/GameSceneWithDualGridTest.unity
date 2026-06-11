@@ -6854,6 +6854,17 @@ MonoBehaviour:
   rotationSpeed: 100
   zoomAmount: 1
   followOffsetSpeed: 10
+--- !u!114 &1619705688 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1094255812196091786, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
+  m_PrefabInstance: {fileID: 1887680461}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18671f46db3de9e498a93065c2066127, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!1 &1650140745
 GameObject:
   m_ObjectHideFlags: 0
@@ -7115,6 +7126,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1830360312}
   - component: {fileID: 1830360311}
+  - component: {fileID: 1830360313}
   m_Layer: 0
   m_Name: EnemyAI
   m_TagString: Untagged
@@ -7149,6 +7161,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1830360313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1830360310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1045fce532050d46a077151d67b4025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ToroidMirrorIA
+  bossUnitGrid1: {fileID: 1833639395}
+  cloneUnitGrid2: {fileID: 1619705688}
+--- !u!114 &1833639395 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8261108682759184691, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
+  m_PrefabInstance: {fileID: 330274571}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18671f46db3de9e498a93065c2066127, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!1001 &1842975727
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7228,6 +7265,10 @@ PrefabInstance:
       value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 1094255812196091786, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
+      propertyPath: currentGridType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1094255812196091786, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: maxActionPoints
       value: 2
       objectReference: {fileID: 0}
@@ -7237,7 +7278,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.75
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.y
@@ -7245,7 +7286,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.15193975
+      value: 30.09806
       objectReference: {fileID: 0}
     - target: {fileID: 2892675423842993934, guid: 223c84bb17deb6b469e89b799805673d, type: 3}
       propertyPath: m_LocalRotation.w
