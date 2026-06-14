@@ -19,7 +19,7 @@ public class ToroidLevelGrid : LevelGrid
         }
         ToroidInstance = this;
 
-        gridSystem = new GridSystem<GridObject>(width, height, cellSize, 
+        gridSystem = new GridSystem<GridObject>(width, height, cellSize, transform.position,
             (GridSystem<GridObject> g, GridPosition gridPosition) =>
             {
                 // Patrón de tablero de ajedrez para todo el grid
@@ -71,16 +71,17 @@ public class ToroidLevelGrid : LevelGrid
     public override GridPosition GetGridPosition(Vector3 worldPosition)
     {
         // Restamos la posición del objeto en el mundo para volver la coordenada "local" al Toroide
-        Vector3 localPosition = worldPosition - transform.position;
+        // GridSystem ya maneja originPosition
     
         // Ejecutamos la matemática base con la posición local corregida
-        return base.GetGridPosition(localPosition);
+        return base.GetGridPosition(worldPosition);
     }
 
     public override Vector3 GetWorldPosition(GridPosition gridPosition)
     {
         // Al vector del mundo base le sumamos el offset de dónde está el objeto en la escena
-        return base.GetWorldPosition(gridPosition) + transform.position;
+        // GridSystem ya maneja originPosition
+        return base.GetWorldPosition(gridPosition);
     }
 
     // 2. Blindamos el validador de posiciones para que las casillas "virtuales" 

@@ -73,6 +73,12 @@ public class EnemyAI : MonoBehaviour
     {
         foreach (Unit enemyUnit in UnitManager.Instance.GetEnemyUnitList())
         {
+            // Ignorar unidades que son clones espejo
+            if (enemyUnit.IsMirrorClone)
+            {
+                continue;
+            }
+
             if (TryTakeEnemyAIAction(enemyUnit, onEnemyAIActionComplete))
             {
                 return true;

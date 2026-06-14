@@ -1,111 +1,100 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ToroidMirrorIA : MonoBehaviour
 {
     [Header("Referencias de las Unidades")]
     [SerializeField] private Unit bossUnitGrid1; // El Jefe original en la Grid 1 (Normal)
-    [SerializeField] private Unit cloneUnitGrid2; // La pieza de Lego estándar en la Grid 2 (Toroide)
+    [SerializeField] private Unit cloneUnitGrid2; // El Clon estándar en la Grid 2 (Toroide)
 
-    [Header("Conexiones de Sistemas Futuros")]
-    // Espacio reservado para el componente de gestión de energías que implementaremos más adelante.
-    // De momento se queda declarado para dejar el gancho de arquitectura listo.
-    private MonoBehaviour energySystemClone; 
+    private MoveAction bossMoveAction; // La referencia directa a la acción del Jefe
+    private UnitMotor cloneUnitMotor;  // El motor del clon para sincronizar su target físico
 
     private void Start()
     {
-        // 1. FILTRO DE SEGURIDAD: Validamos que las piezas esenciales estén conectadas en el Inspector
+        // 1. FILTRO DE SEGURIDAD: Validamos referencias en el Inspector
         if (bossUnitGrid1 == null || cloneUnitGrid2 == null)
         {
-            Debug.LogError($"[{gameObject.name}] ToroidMirrorIA: Faltan referencias críticas por asignar en el Inspector.");
+            Debug.LogError($"[{gameObject.name}] ToroidMirrorIA: Faltan referencias críticas en el Inspector.");
             return;
         }
 
-        // 2. GANCHO DE ENERGÍAS (Tentativo para el futuro)
-        // Aquí buscaremos el componente de energía una vez esté creado (ej: cloneUnitGrid2.GetComponent<EnergySystem>())
-        // energySystemClone = cloneUnitGrid2.GetComponent<MonoBehaviour>();
+        // Marcar el clon como unidad espejo para que EnemyAI lo ignore
+        cloneUnitGrid2.IsMirrorClone = true;
 
-        // 3. SUSCRIPCIÓN AL EVENTO GLOBAL DE MOVIMIENTO
-        // Escuchamos el LevelGrid base (Grid 1). Cada vez que cualquier unidad termine de moverse lógicamente,
-        // se disparará el evento y nuestro método interceptará la señal.
-        if (LevelGrid.Instance != null)
+        // Obtener el motor del clon para poder notificarle los saltos de posición
+        cloneUnitMotor = cloneUnitGrid2.GetComponent<UnitMotor>();
+
+        // 2. EL AISLAMIENTO: Buscamos el MoveAction EXCLUSIVAMENTE en la instancia del Jefe
+        bossMoveAction = bossUnitGrid1.GetAction<MoveAction>();
+
+        if (bossMoveAction != null)
         {
-            LevelGrid.Instance.OnAnyUnitMovedGridPosition += LevelGrid_OnAnyUnitMovedGridPosition;
+            // Nos colgamos ÚNICAMENTE del evento de parada del Jefe.
+            // Esto es inmune a lo que hagan las demás unidades del escenario.
+            bossMoveAction.OnStopMoving += BossMoveAction_OnStopMoving;
         }
-
-        // --- CONEXIÓN FUTURA DE COMBATE (Estilo Pokémon) ---
-        // Aquí nos colgaremos del evento de daño o selección de habilidad del jefe de la Grid 1
-        // bossUnitGrid1.OnActionExecuted += BossUnitGrid1_OnActionExecuted;
+        else
+        {
+            Debug.LogError($"[{gameObject.name}] ToroidMirrorIA: El Jefe asignado no tiene un componente MoveAction.");
+        }
     }
 
     /// <summary>
-    /// Manejador del evento de movimiento global de la Grid 1.
-    /// Se ejecuta silenciosamente tras bambalinas en cuanto una unidad cambia de celda.
+    /// Este método se disparará UNA SOLA VEZ por turno, justo cuando el Jefe consolida 
+    /// su posición física final en el suelo de la Grid 1.
     /// </summary>
-    private void LevelGrid_OnAnyUnitMovedGridPosition(object sender, EventArgs e)
+    private void BossMoveAction_OnStopMoving(object sender, EventArgs e)
     {
-        // 1. VALIDACIÓN DE IDENTIDAD: Verificamos si la unidad que disparó el evento es nuestro Jefe
-        // Si el jefe no es la unidad que se acaba de mover en la Grid 1, ignoramos por completo el evento.
-        if (bossUnitGrid1 == null || sender as Unit != bossUnitGrid1) 
-        {
-            return;
-        }
+        if (bossUnitGrid1 == null || cloneUnitGrid2 == null) return;
 
-        // 2. EXTRAER COORDENADAS LOGICAS DE LA GRID 1
-        // Ya es seguro que el Jefe se movió. Le pedimos su posición de celda actual en la Grid 1.
-        GridPosition bossCurrentGridPosition = bossUnitGrid1.GetGridPosition();
+        // 1. EXTRAER DESTINO CONSOLIDADO
+        GridPosition bossFinalGridPos = bossUnitGrid1.GetGridPosition();
 
-        // 3. TRADUCCIÓN MODULAR PARA LA GRID 2 (Mecánica Pac-Man)
-        // Pasamos la coordenada de la Grid 1 por el filtro toroidal para obtener el índice real arriba.
+        // 2. TRADUCCIÓN MODULAR (Matemática de la Grid 2)
         if (ToroidLevelGrid.ToroidInstance != null)
         {
-            GridPosition mirrorTargetGridPosition = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(bossCurrentGridPosition);
+            // Convertimos la casilla plana a la coordenada envuelta del Toroide
+            GridPosition mirrorTargetGridPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(bossFinalGridPos);
 
-            // Convertimos esa celda de la Grid 2 en su posición física real en metros (añadiendo el offset de altura)
-            Vector3 mirrorWorldPosition = ToroidLevelGrid.ToroidInstance.GetWorldPosition(mirrorTargetGridPosition);
+            // Obtenemos el vector físico en metros de la Grid 2 (con su respectiva altura)
+            Vector3 mirrorWorldPosition = ToroidLevelGrid.ToroidInstance.GetWorldPosition(mirrorTargetGridPos);
 
-            // 4. TELETRANSPORTE INSTANTÁNEO Y SINCRONIZACIÓN DE ESTADO
-            // Guardamos la celda vieja donde estaba parado el clon en la Grid 2 antes del salto
-            GridPosition cloneOldGridPosition = cloneUnitGrid2.GetGridPosition();
+            // 3. TELETRANSPORTE FÍSICO Y LÓGICO
+            GridPosition cloneOldGridPos = cloneUnitGrid2.GetGridPosition();
 
-            // Desplazamos físicamente el Transform en el espacio 3D de forma instantánea (el jugador nunca ve esto)
+            // 4. Teletransportamos el Transform físicamente arriba
             cloneUnitGrid2.transform.position = mirrorWorldPosition;
 
-            // Forzamos la actualización de los diccionarios lógicos de la Grid 2 de manera manual y silenciosa.
-            // Esto asegura que la Grid 2 sepa exactamente en qué celda está el clon para cuando el jugador regrese.
-            ToroidLevelGrid.ToroidInstance.UnitMovedGridPosition(cloneUnitGrid2, cloneOldGridPosition, mirrorTargetGridPosition);
+            // 5. Sincronizamos los diccionarios de ocupación de la Grid 2
+            ToroidLevelGrid.ToroidInstance.UnitMovedGridPosition(cloneUnitGrid2, cloneOldGridPos, mirrorTargetGridPos);
 
-            // 5. GANCHO DE ENERGÍAS POST-MOVIMIENTO (Futuro)
-            if (energySystemClone != null)
+            // 6. ¡EL CABLE CORRECTOR! Pacificamos el motor del clon
+            // Le pasamos una lista con su propia nueva posición en metros. 
+            // Al llamar a StartMovement, el motor limpia su 'targetPosition' viejo, 
+            // lo sobreescribe con el vector del warp y se da por satisfecho sin intentar regresar.
+            if (cloneUnitMotor != null)
             {
-                // Ejemplo: Invocación del consumo o reducción de energía del clon tras el movimiento espejo
-                // energySystemClone.ExecuteEnergyDeduction();
+                List<Vector3> singleWorldPos = new List<Vector3> { mirrorWorldPosition };
+                List<GridPosition> singleGridPos = new List<GridPosition> { mirrorTargetGridPos };
+    
+                cloneUnitMotor.StartMovement(singleWorldPos, singleGridPos, () => {
+                    // Callback vacío: no requiere caminar ni animar porque ya está ahí
+                });
             }
-
-            Debug.Log($"[ESPEJO] Clon relocalizado silenciosamente en la Grid 2 en la celda toroidal: {mirrorTargetGridPosition}");
+            
+            cloneUnitGrid2. SetGridPosition( mirrorTargetGridPos);
+            Debug.Log($"[ESPEJO AISLADO] El Jefe terminó su MoveAction. Clon reposicionado con éxito en la celda toroidal: {mirrorTargetGridPos}");
         }
-    }
-
-    /// <summary>
-    /// Manejador de eventos futuro para las respuestas de combate interactivas (Estilo Pokémon).
-    /// </summary>
-    private void BossUnitGrid1_OnActionExecuted(object sender, EventArgs e)
-    {
-        // LÓGICA FUTURA PARA CONTRARRESTAR ATAQUES:
-        // 1. Detectar qué habilidad/ataque usó el jugador contra el jefe en la Grid 1.
-        // 2. Evaluar el pool de contraataques válidos del clon en la Grid 2.
-        // 3. Inyectar de forma directa la respuesta óptima en la cola del turno actual.
     }
 
     private void OnDestroy()
     {
-        // LIMPIEZA DE MEMORIA: Descolgamos el cable del evento global al destruir o apagar el objeto
-        // para evitar fugas de memoria (Memory Leaks) en Unity al cambiar de escena.
-        if (LevelGrid.Instance != null)
+        // LIMPIEZA DE MEMORIA LOCAL: Descolgamos el cable únicamente de la acción del jefe
+        if (bossMoveAction != null)
         {
-            LevelGrid.Instance.OnAnyUnitMovedGridPosition -= LevelGrid_OnAnyUnitMovedGridPosition;
+            bossMoveAction.OnStopMoving -= BossMoveAction_OnStopMoving;
         }
-        
-        // if (bossUnitGrid1 != null) bossUnitGrid1.OnActionExecuted -= BossUnitGrid1_OnActionExecuted;
     }
 }

@@ -17,6 +17,8 @@ public class Unit : MonoBehaviour
     private int actionPoints;
     private int movePoints;
 
+    public bool IsMirrorClone { get; set; } // Nueva propiedad para identificar clones de espejo
+
     public static event EventHandler OnAnyActionPointsChanged;
     public static event EventHandler OnAnyUnitSpawned;
     public static event EventHandler OnAnyUnitDead;
@@ -37,6 +39,15 @@ public class Unit : MonoBehaviour
         // 1. Primero determinamos el contexto de forma dinámica (El método que diseñamos antes)
         DetermineGridContext();
 
+        // Si gridContext es null, la unidad no pudo registrarse en ninguna cuadrícula válida.
+        // Deshabilitamos el GameObject para evitar más errores.
+        if (gridContext == null)
+        {
+            Debug.LogError($"[CEREBRO-GRID] La unidad {name} no pudo inicializarse en ninguna cuadrícula válida. Deshabilitando GameObject.");
+            gameObject.SetActive(false);
+            return; // Salir de Start para evitar NullReferenceException
+        }
+
         // 2. Ahora que 'myGridContext' ya está asignado de forma segura, extraemos la posición lógica inicial
         // CORRECCIÓN POLIMÓRFICA: Usamos gridContext. El registro en la lista ya se hace dentro de DetermineGridContext.
         gridPosition = gridContext.GetGridPosition(transform.position);
@@ -50,6 +61,9 @@ public class Unit : MonoBehaviour
 
     private void Update()
     {
+        // Si gridContext es null, la unidad no está en una cuadrícula válida, no debe moverse ni formarse.
+        if (gridContext == null) return;
+
         MoveAction moveAction = GetAction<MoveAction>();
         bool isMoving = moveAction != null && moveAction.IsActionActive();
 
@@ -107,6 +121,12 @@ public class Unit : MonoBehaviour
     public GridPosition GetGridPosition()
     {
         return gridPosition;
+    }
+
+    // Nuevo método para establecer la posición de la cuadrícula
+    public void SetGridPosition(GridPosition newGridPosition)
+    {
+        gridPosition = newGridPosition;
     }
 
     public Vector3 GetWorldPosition()
@@ -208,8 +228,11 @@ public class Unit : MonoBehaviour
 
     private void HealthSystem_OnDead(object sender, EventArgs e)
     {
-        // CORRECCIÓN: Removemos la unidad usando el contexto polimórfico dinámico
-        gridContext.RemoveUnitAtGridPosition(gridPosition, this);
+        // Si gridContext es null, la unidad no está en una cuadrícula válida, no hay que removerla.
+        if (gridContext != null)
+        {
+            gridContext.RemoveUnitAtGridPosition(gridPosition, this);
+        }
         Destroy(gameObject);
         
         OnAnyUnitDead?.Invoke(this, EventArgs.Empty);
@@ -240,48 +263,37 @@ public class Unit : MonoBehaviour
     
     private void DetermineGridContext()
     {
-        // --- 1. VALIDACIÓN PARA EL PLANO TOROIDAL ---
+        // Intentar registrar en la cuadrícula toroidal
         if (ToroidLevelGrid.ToroidInstance != null)
         {
-            // Calculamos el tamaño físico real en metros del mapa toroidal
-            float gridWidthMetres = ToroidLevelGrid.ToroidInstance.GetWidth() * ToroidLevelGrid.ToroidInstance.GetCellSize();
-            float gridHeightMetres = ToroidLevelGrid.ToroidInstance.GetHeight() * ToroidLevelGrid.ToroidInstance.GetCellSize();
-
-            // Obtenemos el origen físico de donde colocaste el objeto ToroidLevelGrid en la escena
-            Vector3 toroidOrigin = ToroidLevelGrid.ToroidInstance.transform.position;
-
-            // Creamos una caja virtual (Bounds) que representa el terreno exacto del Toroide
-            Bounds toroidBounds = new Bounds(
-            toroidOrigin + new Vector3(gridWidthMetres / 2f, 0f, gridHeightMetres / 2f), 
-            new Vector3(gridWidthMetres, 10f, gridHeightMetres) // 10 metros de altura de margen
-            );
-
-            // Si la posición física de la unidad está DENTRO de la caja del Toroide, se queda aquí
-            if (toroidBounds.Contains(transform.position))
+            GridPosition toroidLocalPos = ToroidLevelGrid.ToroidInstance.GetGridPosition(transform.position);
+            if (ToroidLevelGrid.ToroidInstance.IsValidGridPosition(toroidLocalPos))
             {
                 gridContext = ToroidLevelGrid.ToroidInstance;
                 currentGridType = GridType.Toroid;
-
-                // Calculamos su posición usando el sistema toroidal
-                GridPosition localPos = gridContext.GetGridPosition(transform.position);
-                gridContext.AddUnitAtGridPosition(localPos, this);
-            
+                gridContext.AddUnitAtGridPosition(toroidLocalPos, this);
                 Debug.Log($"[CEREBRO-GRID] {name} se registró con éxito en la Grid TOROIDAL.");
-                return;
+                return; // Se registró con éxito, salir
             }
         }
 
-        // --- 2. VALIDACIÓN PARA EL PLANO NORMAL (Por descarte o vecindad) ---
+        // Si no se registró en la toroidal, intentar en la cuadrícula normal
         if (LevelGrid.Instance != null)
         {
-            gridContext = LevelGrid.Instance;
-            currentGridType = GridType.Normal;
-
-            GridPosition localPos = gridContext.GetGridPosition(transform.position);
-            gridContext.AddUnitAtGridPosition(localPos, this);
-        
-            Debug.Log($"[CEREBRO-GRID] {name} se registró con éxito en la Grid NORMAL.");
+            GridPosition normalLocalPos = LevelGrid.Instance.GetGridPosition(transform.position);
+            if (LevelGrid.Instance.IsValidGridPosition(normalLocalPos))
+            {
+                gridContext = LevelGrid.Instance;
+                currentGridType = GridType.Normal;
+                gridContext.AddUnitAtGridPosition(normalLocalPos, this);
+                Debug.Log($"[CEREBRO-GRID] {name} se registró con éxito en la Grid NORMAL.");
+                return; // Se registró con éxito, salir
+            }
         }
+
+        // Si llegamos aquí, la unidad no pudo registrarse en ninguna cuadrícula
+        Debug.LogError($"[CEREBRO-GRID] {name} no pudo registrarse en ninguna cuadrícula. Posición mundial: {transform.position}");
+        // gridContext permanece null, lo que será manejado en Start()
     }
 
     // Expón el contexto para que tus acciones lo consuman de forma dinámica

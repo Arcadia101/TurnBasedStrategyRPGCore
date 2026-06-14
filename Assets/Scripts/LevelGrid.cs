@@ -28,7 +28,7 @@ public class LevelGrid : MonoBehaviour
             Instance = this;
         }
 
-        gridSystem = new GridSystem<GridObject>(width, height, cellSize, 
+        gridSystem = new GridSystem<GridObject>(width, height, cellSize, transform.position,
             (GridSystem<GridObject> g, GridPosition gridPosition) =>
             {
                 // Patrón de tablero de ajedrez para todo el grid
@@ -51,15 +51,20 @@ public class LevelGrid : MonoBehaviour
     public void AddUnitAtGridPosition(GridPosition gridPosition, Unit unit)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        if (gridObject.CanAddUnit())
+        if (gridObject != null && gridObject.CanAddUnit()) // Añadida verificación de null
         {
             gridObject.AddUnit(unit);
+        }
+        else if (gridObject == null)
+        {
+            Debug.LogWarning($"No se pudo añadir la unidad {unit.name} en la posición de cuadrícula inválida {gridPosition}.");
         }
     }
     
     public virtual List<Unit> GetUnitListAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
+        if (gridObject == null) return new List<Unit>(); // Devuelve una lista vacía si la posición es inválida
         return gridObject.GetUnitList();
     }
     
@@ -68,13 +73,16 @@ public class LevelGrid : MonoBehaviour
     public void RemoveUnitAtGridPosition(GridPosition gridPosition, Unit unit)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        gridObject.RemoveUnit(unit);
+        if (gridObject != null) // Añadida verificación de null
+        {
+            gridObject.RemoveUnit(unit);
+        }
     }
 
-    public virtual void UnitMovedGridPosition(Unit unit, GridPosition fromGridPosition, GridPosition toGridPosition)
+    public virtual void UnitMovedGridPosition(Unit unit, GridPosition fromGridPosition, GridPosition gridPosition)
     {
         RemoveUnitAtGridPosition(fromGridPosition, unit);
-        AddUnitAtGridPosition(toGridPosition, unit);
+        AddUnitAtGridPosition(gridPosition, unit);
         OnAnyUnitMovedGridPosition?.Invoke(this, EventArgs.Empty);
     }
     
@@ -87,37 +95,40 @@ public class LevelGrid : MonoBehaviour
     public virtual bool HasAnyUnitOnGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        return gridObject.HasAnyUnit();
+        return gridObject != null && gridObject.HasAnyUnit(); // Añadida verificación de null
     }
     
     public bool CanAddUnitAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        return gridObject.CanAddUnit();
+        return gridObject != null && gridObject.CanAddUnit(); // Añadida verificación de null
     }
     
     public virtual Unit GetUnitAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        return gridObject.GetUnit();
+        return gridObject?.GetUnit(); // Uso del operador ?. para seguridad de null
     }
 
     public virtual IInteractable GetInteractableAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        return gridObject.GetInteractable();
+        return gridObject?.GetInteractable(); // Uso del operador ?. para seguridad de null
     }
     
     public void SetInteractableAtGridPosition(GridPosition gridPosition, IInteractable interactable)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        gridObject.SetInteractable(interactable);
+        if (gridObject != null) // Añadida verificación de null
+        {
+            gridObject.SetInteractable(interactable);
+        }
     }
 
     public TileType GetTileTypeAtGridPosition(GridPosition gridPosition)
     {
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
-        return gridObject.GetTileType();
+        return gridObject != null ? gridObject.GetTileType() : TileType.Octagon; // Devuelve un valor predeterminado si es null
     }
 
     // Nuevo método para calcular la posición de formación de la unidad
@@ -126,6 +137,8 @@ public class LevelGrid : MonoBehaviour
         GridPosition gridPosition = unit.GetGridPosition();
         GridObject gridObject = gridSystem.GetGridObject(gridPosition);
         
+        if (gridObject == null) return unit.transform.position; // Devuelve la posición actual de la unidad si la gridObject es null
+
         List<Unit> unitList = gridObject.GetUnitList();
         int unitIndex = unitList.IndexOf(unit);
         int unitCount = unitList.Count;

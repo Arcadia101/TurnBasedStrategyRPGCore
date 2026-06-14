@@ -27,7 +27,12 @@ public class ToroidPathfinding : Pathfinding
     {
         // Seteamos las variables heredadas de la base para el Toroide
         // (Nota: Si las variables en la base son privadas, cámbialas en Pathfinding.cs a 'protected' para que esta clase las pueda rellenar, ej: protected int width;)
-        base.Setup(width, height, cellSize);
+        this.width = width;
+        this.height = height;
+        this.cellSize = cellSize;
+
+        gridSystem = new GridSystem<PathNode>(this.width, this.height, this.cellSize, ToroidLevelGrid.ToroidInstance.transform.position,
+            (GridSystem<PathNode> g, GridPosition gridPosition) => new PathNode(gridPosition));
 
         // Sobreescribimos los nodos transitables (Obstáculos) usando de forma estricta la matemática del Toroide
         for (int x = 0; x < width; x++)

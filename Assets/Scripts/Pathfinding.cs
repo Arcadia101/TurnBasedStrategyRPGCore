@@ -37,7 +37,7 @@ public class Pathfinding : MonoBehaviour
         this.height = height;
         this.cellSize = cellSize;
         
-        gridSystem = new GridSystem<PathNode>(this.width, this.height, this.cellSize,
+        gridSystem = new GridSystem<PathNode>(this.width, this.height, this.cellSize, LevelGrid.Instance.transform.position,
             (GridSystem<PathNode> g, GridPosition gridPosition) => new PathNode(gridPosition));
         
         // Ya no instanciamos objetos de debug del pathfinding para evitar errores de casteo

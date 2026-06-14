@@ -6,13 +6,15 @@ public class GridSystem<TGridObject>
     private int width;
     private int height;
     private float cellSize;
+    private Vector3 originPosition;
     private TGridObject[,] gridObjectArray;
 
-    public GridSystem(int width, int height, float cellSize, Func<GridSystem<TGridObject>, GridPosition, TGridObject> createGridObject)
+    public GridSystem(int width, int height, float cellSize, Vector3 originPosition, Func<GridSystem<TGridObject>, GridPosition, TGridObject> createGridObject)
     {
         this.width = width;
         this.height = height;
         this.cellSize = cellSize;
+        this.originPosition = originPosition;
 
         gridObjectArray = new TGridObject[width, height];
         for (int x = 0; x < width; x++)
@@ -33,22 +35,35 @@ public class GridSystem<TGridObject>
         float worldX = (centeredX - centeredZ) * cellSize * 0.5f;
         float worldZ = (centeredX + centeredZ) * cellSize * 0.5f;
         
-        return new Vector3(worldX, 0, worldZ);
+        return new Vector3(worldX, 0, worldZ) + originPosition;
     }
     
     public GridPosition GetGridPosition(Vector3 worldPosition)
     {
-        float x = worldPosition.x / (cellSize * 0.5f);
-        float z = worldPosition.z / (cellSize * 0.5f);
+        Vector3 localPosition = worldPosition - this.originPosition;
 
-        int gridX = Mathf.RoundToInt(((z + x) / 2f) + (width - 1) / 2f);
-        int gridZ = Mathf.RoundToInt(((z - x) / 2f) + (height - 1) / 2f);
+        // Invertir la transformación isométrica
+        float isoCellSize = cellSize * 0.5f;
+        float invIsoCellSize = 1f / isoCellSize;
+
+        float centeredGridXFloat = (localPosition.z * invIsoCellSize + localPosition.x * invIsoCellSize) / 2f;
+        float centeredGridZFloat = (localPosition.z * invIsoCellSize - localPosition.x * invIsoCellSize) / 2f;
+
+        // Ajustar de nuevo a las coordenadas de la cuadrícula no centradas
+        // Usar RoundToInt para mayor precisión al mapear del mundo a la cuadrícula
+        int gridX = Mathf.RoundToInt(centeredGridXFloat + (width - 1) / 2f);
+        int gridZ = Mathf.RoundToInt(centeredGridZFloat + (height - 1) / 2f);
 
         return new GridPosition(gridX, gridZ);
     }
 
     public TGridObject GetGridObject(GridPosition gridPosition)
     {
+        if (!IsValidGridPosition(gridPosition))
+        {
+            Debug.LogError($"GetGridObject: Invalid GridPosition ({gridPosition.x}, {gridPosition.z}). Width: {width}, Height: {height}");
+            return default;
+        }
         return gridObjectArray[gridPosition.x, gridPosition.z];
     }
     
