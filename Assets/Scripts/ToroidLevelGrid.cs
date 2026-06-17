@@ -139,4 +139,38 @@ public class ToroidLevelGrid : LevelGrid
         GridObject gridObject = gridSystem.GetGridObject(wrappedPos);
         return gridObject.GetInteractable();
     }
+    
+    public override void TriggerEnergyRefresh()
+    {
+        globalEnergyMap.Clear();
+
+        Unit[] unitsArray = FindObjectsOfType<Unit>();
+        List<Unit> allUnits = new List<Unit>(unitsArray);
+
+        foreach (Unit unit in allUnits)
+        {
+            // ¡EL FILTRO PROTECTOR INVERSO!
+            // Si la unidad pertenece a la Grid Normal, el Toroide la ignora por completo
+            if (unit.GetCurrentGridType() == GridType.Normal) continue;
+
+            UnitEnergy unitEnergy = unit.GetComponent<UnitEnergy>();
+            if (unitEnergy == null) continue;
+
+            List<GridPosition> energizedCells = unitEnergy.GetEnergizedPositions();
+            foreach (GridPosition cell in energizedCells)
+            {
+                if (!globalEnergyMap.ContainsKey(cell)) globalEnergyMap[cell] = new List<Unit>();
+                globalEnergyMap[cell].Add(unit);
+            }
+        }
+
+        // Solo le pedimos auto-evaluarse a los clones de arriba
+        foreach (Unit unit in allUnits)
+        {
+            if (unit.GetCurrentGridType() == GridType.Toroid)
+            {
+                unit.GetComponent<UnitEnergy>()?.CheckForOverlap();
+            }
+        }
+    }
 }

@@ -299,6 +299,8 @@ public class Unit : MonoBehaviour
     // Expón el contexto para que tus acciones lo consuman de forma dinámica
     public LevelGrid GetGridContext() => gridContext;
     
+    public GridType GetCurrentGridType() => currentGridType;
+    
 }
 
 public enum GridType

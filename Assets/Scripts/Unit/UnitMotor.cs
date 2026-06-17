@@ -76,6 +76,8 @@ public class UnitMotor : MonoBehaviour
             {
                 isMoving = false;
                 onMovementComplete?.Invoke();
+                //Avisamos al universo del juego que una unidad terminó de moverse.
+                GameGridEvents.TriggerMovementComplete();
             }
         }
     }

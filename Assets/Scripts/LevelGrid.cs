@@ -14,6 +14,10 @@ public class LevelGrid : MonoBehaviour
     
     protected GridSystem<GridObject> gridSystem;
     
+    // Un diccionario donde la clave es la celda, y el valor es una lista de todas las unidades 
+    // que actualmente están proyectando energía en esa celda específica.
+    protected Dictionary<GridPosition, List<Unit>> globalEnergyMap = new Dictionary<GridPosition, List<Unit>>();
+    
     protected virtual void Awake()
     {
         // CONDICIÓN CLAVE: Solo se asigna si este script es un LevelGrid puro, no un hijo.
@@ -163,6 +167,107 @@ public class LevelGrid : MonoBehaviour
 
         return worldPosition; // Centro si solo hay 1 unidad
     }
+
+    public virtual GridSystem<GridObject> GetGridSystem() => gridSystem;
     
+    // Método público para que UnitEnergy pueda leer el mapa de choques
+    public virtual Dictionary<GridPosition, List<Unit>> GetGlobalEnergyMap()
+    {
+        return globalEnergyMap;
+    }
     
+    public virtual void RefreshGlobalEnergyMap(List<Unit> allUnitsInLevel)
+    {
+        // 1. Limpiamos el mapa viejo para no arrastrar fantasmas
+        globalEnergyMap.Clear();
+
+        // 2. Recorremos todas las unidades del nivel
+        foreach (Unit unit in allUnitsInLevel)
+        {
+            // Le pedimos a su componente de energía las celdas que afecta
+            UnitEnergy unitEnergy = unit.GetComponent<UnitEnergy>();
+            if (unitEnergy == null) continue;
+
+            List<GridPosition> energizedCells = unitEnergy.GetEnergizedPositions();
+
+            // 3. Registramos cada celda en el diccionario global
+            foreach (GridPosition cell in energizedCells)
+            {
+                if (!globalEnergyMap.ContainsKey(cell))
+                {
+                    globalEnergyMap[cell] = new List<Unit>();
+                }
+            
+                // Añadimos esta unidad como una de las dueñas de la energía en esa casilla
+                globalEnergyMap[cell].Add(unit);
+            }
+        }
+
+        // 4. ¡EL DISPARADOR GLOBAL! 
+        // Ahora que el mapa está actualizado, le avisamos a todas las unidades 
+        // que ejecuten su auto-evaluación 'CheckForOverlap()'
+        foreach (Unit unit in allUnitsInLevel)
+        {
+            UnitEnergy unitEnergy = unit.GetComponent<UnitEnergy>();
+            if (unitEnergy != null)
+            {
+                unitEnergy.CheckForOverlap(); 
+            }
+        }
+    }
+    
+    public virtual void TriggerEnergyRefresh()
+    {
+        globalEnergyMap.Clear();
+
+        Unit[] unitsArray = FindObjectsOfType<Unit>();
+        List<Unit> allUnits = new List<Unit>(unitsArray);
+
+        foreach (Unit unit in allUnits)
+        {
+            // ¡EL FILTRO PROTECTOR!
+            // Si la unidad está registrada en el Toroide, la Grid de abajo la ignora por completo
+            if (unit.GetCurrentGridType() == GridType.Toroid) continue;
+
+            UnitEnergy unitEnergy = unit.GetComponent<UnitEnergy>();
+            if (unitEnergy == null) continue;
+
+            List<GridPosition> energizedCells = unitEnergy.GetEnergizedPositions();
+            foreach (GridPosition cell in energizedCells)
+            {
+                if (!globalEnergyMap.ContainsKey(cell)) globalEnergyMap[cell] = new List<Unit>();
+                globalEnergyMap[cell].Add(unit);
+            }
+        }
+
+        // Solo le pedimos auto-evaluarse a las unidades de abajo
+        foreach (Unit unit in allUnits)
+        {
+            if (unit.GetCurrentGridType() == GridType.Normal)
+            {
+                unit.GetComponent<UnitEnergy>()?.CheckForOverlap();
+            }
+        }
+    }
+    
+    protected void OnEnable()
+    {
+        // Nos suscribimos a los eventos globales
+        GameGridEvents.OnAnyUnitMovementComplete += HandleGlobalRefresh;
+        GameGridEvents.OnAnyUnitEnergyChanged += HandleGlobalRefresh;
+    }
+
+    protected void OnDisable()
+    {
+        // Es vital desuscribirse al destruir el objeto para evitar errores de referencia
+        GameGridEvents.OnAnyUnitMovementComplete -= HandleGlobalRefresh;
+        GameGridEvents.OnAnyUnitEnergyChanged -= HandleGlobalRefresh;
+    }
+
+    protected void HandleGlobalRefresh()
+    {
+        // Este método se ejecutará automáticamente en ambos tableros al mismo tiempo
+        // cuando cualquier unidad termine su viaje.
+        TriggerEnergyRefresh(); 
+    }
 }
