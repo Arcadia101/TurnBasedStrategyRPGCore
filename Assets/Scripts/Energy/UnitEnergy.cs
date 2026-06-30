@@ -11,6 +11,10 @@ public class UnitEnergy : MonoBehaviour
 
     [Header("Estados de Energía")]
     [SerializeField] private bool hasOverlappedEnergy; // Se puede ver en el inspector para debugear
+    
+    [Header("Rotación de Energía")]
+    [Tooltip("0 = Original, 1 = 45° Derecha, 2 = 90° Derecha... 7 = 315° Derecha")]
+    [SerializeField] private int rotationOffset = 0;
 
     // Propiedad pública de solo lectura para que otros scripts la consulten
     public bool HasOverlappedEnergy => hasOverlappedEnergy;
@@ -19,11 +23,22 @@ public class UnitEnergy : MonoBehaviour
     {
         unit = GetComponent<Unit>();
     }
+    
+    
+    // Rota la energía hacia la derecha (sentido horario) o izquierda sumando al offset.
+    public void RotateEnergy(int steps)
+    {
+        // Aplicamos aritmética modular para mantener el offset siempre entre 0 y 7
+        rotationOffset = (rotationOffset + steps) % 8;
+        if (rotationOffset < 0) rotationOffset += 8; // Clampa en positivo si giran a la izquierda
 
-    /// <summary>
-    /// Devuelve la lista de posiciones de la cuadrícula que están actualmente 
-    /// energizadas por el aspecto de esta unidad.
-    /// </summary>
+        // ¡SÚPER IMPORTANTE! Avisamos a los tableros que la energía cambió de forma
+        GameGridEvents.TriggerEnergyChanged();
+    }
+
+    
+    // Devuelve la lista de posiciones de la cuadrícula que están actualmente 
+    // energizadas por el aspecto de esta unidad.
     public List<GridPosition> GetEnergizedPositions()
     {
         if (currentAspect == null)
@@ -45,8 +60,50 @@ public class UnitEnergy : MonoBehaviour
         // Si tu arquitectura hereda de una clase base de Grid, podemos llamar directamente al método que creamos:
         var activeGridSystem = unit.GetGridContext().GetGridSystem();
 
+        // --- AQUÍ APLICAMOS LA ROTACIÓN MATEMÁTICA ---
+        List<GridPosition> validEnergyPositions = new List<GridPosition>();
+        validEnergyPositions.Add(unitGridPos); // La casilla central siempre se energiza
+
+        foreach (EnergyDirection baseDirection in currentAspect.GetActiveDirections())
+        {
+            // 1. Convertimos el enum a su valor numérico (0 a 7)
+            int baseDirIndex = (int)baseDirection;
+
+            // 2. Le sumamos el offset de rotación actual de la unidad
+            int rotatedDirIndex = (baseDirIndex + rotationOffset) % 8;
+
+            // 3. Lo casteamos de vuelta al enum EnergyDirection ya rotado
+            EnergyDirection finalDirection = (EnergyDirection)rotatedDirIndex;
+
+            // 4. Calculamos el offset de cuadrícula (que ya tiene los 45° corregidos de ayer)
+            GridPosition offset = EnergyGridExtensions.GetDirectionOffset(finalDirection);
+            GridPosition targetPos = unitGridPos + offset;
+
+            // 5. Envoltura Toroidal
+            if (isToroid && ToroidLevelGrid.ToroidInstance != null)
+            {
+                targetPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(targetPos);
+            }
+
+            // 6. Filtro Geométrico de adyacencia (Casteo de ayer)
+            if (activeGridSystem.IsValidGridPosition(targetPos))
+            {
+                GridObject originNode = activeGridSystem.GetGridObject(unitGridPos) as GridObject;
+                if (originNode != null && originNode.GetTileType() == TileType.Rhombus)
+                {
+                    // Bloqueamos salto diagonal (1,1) desde rombo
+                    if (Mathf.Abs(offset.x) > 0 && Mathf.Abs(offset.z) > 0)
+                    {
+                        continue; 
+                    }
+                }
+                validEnergyPositions.Add(targetPos);
+            }
+        }
+        
+        
         // 4. Retornamos el cálculo matemático final de la Grid
-        return activeGridSystem.CalculateEnergyPositions(unitGridPos, currentAspect, isToroid);
+        return validEnergyPositions;
     }
     
     public void CheckForOverlap()
@@ -91,8 +148,8 @@ public class UnitEnergy : MonoBehaviour
     public void SetEmotype(EmotypeData newEmotype)
     {
         currentAspect = newEmotype;
-        // Alerta inmediata de que cambió un patrón de energía
-        unit.GetGridContext().TriggerEnergyRefresh();
+        rotationOffset = 0; // REGLA: El nuevo aspecto entra limpio de fábrica
+        unit.GetGridContext().TriggerEnergyRefresh(); // Alerta inmediata de que cambió un patrón de energía
     }
     
     private void OnDrawGizmos()

@@ -525,6 +525,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
   currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
   hasOverlappedEnergy: 0
+  rotationOffset: 0
 --- !u!1 &169247792
 GameObject:
   m_ObjectHideFlags: 0
@@ -7077,6 +7078,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
   currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
   hasOverlappedEnergy: 0
+  rotationOffset: 0
 --- !u!1001 &1842975727
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7162,6 +7164,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
   currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
   hasOverlappedEnergy: 0
+  rotationOffset: 0
 --- !u!1001 &1887680461
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7271,6 +7274,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
   currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
   hasOverlappedEnergy: 0
+  rotationOffset: 0
+--- !u!114 &1995782200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1051992803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7add7d875f15dab44ac2d93045365d48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateEnergyAction
+  ActionPointsCost: 0
 --- !u!1 &2040336877
 GameObject:
   m_ObjectHideFlags: 0
@@ -7984,6 +8001,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6314060414634135025, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1995782187}
+    - targetCorrespondingSourceObject: {fileID: 6314060414634135025, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1995782200}
   m_SourcePrefab: {fileID: 100100000, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
 --- !u!4 &1594159597922232866 stripped
 Transform:

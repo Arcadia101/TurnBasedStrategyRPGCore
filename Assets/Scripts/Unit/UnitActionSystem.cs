@@ -50,7 +50,7 @@ public class UnitActionSystem : MonoBehaviour
         if (!TurnSystem.Instance.IsPlayerTurn()) return;
         if (EventSystem.current.IsPointerOverGameObject()) return;
         
-        if (InputManager.Instance.WasSwitchGridPressed()) // <--- Reemplaza por tu método exacto del InputManager si se llama distinto
+        if (InputManager.Instance.WasSwitchGridPressed())
         {
             SwitchGridContextWarp();
         }
@@ -66,6 +66,7 @@ public class UnitActionSystem : MonoBehaviour
                 if (HandleTargetOrUnitCycling()) return;
                 if (TryHandleSelectedAction()) return;
             }
+            
 
             // Si está Busy y la acción NO está esperando objetivo (ej: la bala ya va volando o el personaje se está moviendo),
             // bloqueamos por completo el input como siempre.
@@ -246,6 +247,11 @@ public class UnitActionSystem : MonoBehaviour
                 // Retornamos true porque consumimos el input; el tiro ya va en camino y el
                 // estado de ShootAction cambiará internamente a State.Healing.
                 if (healAction.ConfirmSelectedTarget()) return true;
+            }
+            
+            else if (selectedAction is RotateEnergyAction rotateEnergyAction)
+            {
+                if (rotateEnergyAction.ConfirmRotation()) return true;
             }
             // NOTA DE EXPANSION: Aquí añadir a futuro las otras acciones:
             // else if (selectedAction is SwordAction swordAction) { ... } etc.

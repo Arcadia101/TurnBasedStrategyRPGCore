@@ -153,7 +153,7 @@ public class Unit : MonoBehaviour
 
     public bool TrySpendActionPointsOrMovePointsToTakeActionOrMove(BaseAction baseAction)
     {
-        if (baseAction is MoveAction)
+        if (baseAction is MoveAction || baseAction is RotateEnergyAction)
         {
             if (CanSpendMovePointsToMove(baseAction))
             {
