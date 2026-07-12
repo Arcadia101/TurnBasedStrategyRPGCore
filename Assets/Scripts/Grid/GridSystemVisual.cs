@@ -188,7 +188,12 @@ public class GridSystemVisual : MonoBehaviour
                 break;
         }
         
-        ShowGridPositionList(selectedAction.GetValidActionGridPositionList(), gridVisualType);
+        // FILTRO INTELIGENTE: Solo rellenamos las casillas por dentro si NO es la acción de movimiento.
+        // De esta manera el suelo del rango se queda transparente y limpio para tus energías tácticas.
+        if (selectedAction is not MoveAction)
+        {
+            ShowGridPositionList(selectedAction.GetValidActionGridPositionList(), gridVisualType);
+        }
     }
 
     // CORRECCIÓN: Usamos las dimensiones de la grid de este visualizador (evita desbordes)
@@ -273,5 +278,17 @@ public class GridSystemVisual : MonoBehaviour
             }
         }
         ShowGridPositionList(gridPositionList, gridVisualType);
+    }
+    
+    // Devuelve el componente visual single de una posición específica protegiendo los límites del array.
+    public GridSystemVisualSingle GetGridSystemVisualSingleAtPosition(GridPosition gridPosition)
+    {
+        if (gridPosition.x >= 0 && gridPosition.z >= 0 && 
+            gridPosition.x < gridSystemVisualSingleArray.GetLength(0) && 
+            gridPosition.z < gridSystemVisualSingleArray.GetLength(1))
+        {
+            return gridSystemVisualSingleArray[gridPosition.x, gridPosition.z];
+        }
+        return null;
     }
 }

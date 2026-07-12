@@ -1956,7 +1956,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3884391607846025773, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: ActionPointsCost
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5721112675720794914, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: m_Enabled
@@ -5825,6 +5825,56 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 9209766741945426945, guid: 1a3070cdee391d54598f508638a9f507, type: 3}
   m_PrefabInstance: {fileID: 1291531926}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1292208757
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1292208759}
+  - component: {fileID: 1292208758}
+  m_Layer: 0
+  m_Name: GridOutlineRenderer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1292208758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292208757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd7b1be18708c28439d06ea87bb4dd30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridOutlineRenderer
+  outlineMaterial: {fileID: 2100000, guid: 5a9382c4cc269f04b9e201bc910f8a2c, type: 2}
+  lineWidth: 0.08
+  floatHeight: 0.5
+  debugReturnRawBoundaryEdges: 1
+  debugDumpTileGeometry: 0
+  debugTraceBoundaryEdges: 0
+--- !u!4 &1292208759
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292208757}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1322122433
 GameObject:
   m_ObjectHideFlags: 0
@@ -7926,6 +7976,10 @@ PrefabInstance:
       propertyPath: maxMoveDistance
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 3884391607846025773, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
+      propertyPath: ActionPointsCost
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5721112675720794914, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       propertyPath: ActionPointsCost
       value: 2
@@ -8512,3 +8566,4 @@ SceneRoots:
   - {fileID: 854616993}
   - {fileID: 1247157569}
   - {fileID: 2086509673}
+  - {fileID: 1292208759}

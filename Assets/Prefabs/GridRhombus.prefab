@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5279389053217739871}
   - component: {fileID: 1920361863671700377}
+  - component: {fileID: 7287101226204249234}
   m_Layer: 0
   m_Name: GridRhombus
   m_TagString: Untagged
@@ -138,6 +139,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridSystemVisualSingle
   meshRenderer: {fileID: 1468937294110912515}
   textMeshPro: {fileID: 8276513241711655399}
+--- !u!114 &7287101226204249234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668437179459658804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 647dc9317342d8a489002c1abfc5a4e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridTileGeometry
+  tileType: 1
+  outerRadius: 0.6
 --- !u!1 &4248633921062808811
 GameObject:
   m_ObjectHideFlags: 0

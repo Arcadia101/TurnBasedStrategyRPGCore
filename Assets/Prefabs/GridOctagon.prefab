@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5279389053217739871}
   - component: {fileID: 1920361863671700377}
+  - component: {fileID: 1758193888580150537}
   m_Layer: 0
   m_Name: GridOctagon
   m_TagString: Untagged
@@ -138,6 +139,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GridSystemVisualSingle
   meshRenderer: {fileID: 1468937294110912515}
   textMeshPro: {fileID: 9196246910117886335}
+--- !u!114 &1758193888580150537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668437179459658804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 647dc9317342d8a489002c1abfc5a4e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridTileGeometry
+  tileType: 0
+  outerRadius: 1
 --- !u!1 &4820303419771376265
 GameObject:
   m_ObjectHideFlags: 0
