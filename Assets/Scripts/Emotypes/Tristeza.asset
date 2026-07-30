@@ -15,7 +15,7 @@ MonoBehaviour:
   emotypeName: Tristeza
   primaryClass: 0
   secondaryClass: 4
-  activeDirections: 0400000004000000
+  activeDirections: 04000000
   impulse: 5
   gestures: 5
   permanency: -1

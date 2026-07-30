@@ -15,7 +15,7 @@ MonoBehaviour:
   emotypeName: Asombro
   primaryClass: 0
   secondaryClass: 1
-  activeDirections: 0100000001000000
+  activeDirections: 01000000
   impulse: 6
   gestures: 3
   permanency: 0

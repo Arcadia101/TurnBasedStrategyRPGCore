@@ -15,7 +15,7 @@ MonoBehaviour:
   emotypeName: Rabia
   primaryClass: 0
   secondaryClass: 0
-  activeDirections: 0000000000000000
+  activeDirections: 00000000
   impulse: 4
   gestures: 4
   permanency: -1

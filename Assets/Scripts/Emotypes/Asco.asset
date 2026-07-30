@@ -15,7 +15,7 @@ MonoBehaviour:
   emotypeName: Asco
   primaryClass: 0
   secondaryClass: 5
-  activeDirections: 0500000005000000
+  activeDirections: 05000000
   impulse: 5
   gestures: 4
   permanency: -1

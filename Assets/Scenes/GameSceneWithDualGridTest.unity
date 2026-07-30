@@ -7382,7 +7382,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27c860373cb95d640920aa344fabe6fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
-  currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
+  currentAspect: {fileID: 11400000, guid: 176e33db5b1c2c740a5e0f6c0c421c8d, type: 2}
   hasOverlappedEnergy: 0
   rotationOffset: 0
 --- !u!114 &1995782200

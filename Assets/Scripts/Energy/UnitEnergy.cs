@@ -4,27 +4,28 @@ using UnityEngine;
 
 public class UnitEnergy : MonoBehaviour
 {
-    [Header("Configuración del Aspecto")]
-    [SerializeField] private EmotypeData currentAspect;
+    [Header("Configuración del Aspecto")] [SerializeField]
+    private EmotypeData currentAspect;
 
     private Unit unit;
 
-    [Header("Estados de Energía")]
-    [SerializeField] private bool hasOverlappedEnergy; // Se puede ver en el inspector para debugear
-    
+    [Header("Estados de Energía")] [SerializeField]
+    private bool hasOverlappedEnergy; // Se puede ver en el inspector para debugear
+
     [Header("Rotación de Energía")]
     [Tooltip("0 = Original, 1 = 45° Derecha, 2 = 90° Derecha... 7 = 315° Derecha")]
-    [SerializeField] private int rotationOffset = 0;
+    [SerializeField]
+    private int rotationOffset = 0;
 
     // Propiedad pública de solo lectura para que otros scripts la consulten
     public bool HasOverlappedEnergy => hasOverlappedEnergy;
-    
+
     private void Awake()
     {
         unit = GetComponent<Unit>();
     }
-    
-    
+
+
     // Rota la energía hacia la derecha (sentido horario) o izquierda sumando al offset.
     public void RotateEnergy(int steps)
     {
@@ -40,6 +41,80 @@ public class UnitEnergy : MonoBehaviour
     // Devuelve la lista de posiciones de la cuadrícula que están actualmente 
     // energizadas por el aspecto de esta unidad.
     public List<GridPosition> GetEnergizedPositions()
+    {
+        if (currentAspect == null)
+        {
+            // Si no hay aspecto, solo la casilla central se energiza
+            return new List<GridPosition> { unit.GetGridPosition() };
+        }
+
+        GridPosition unitGridPos = unit.GetGridPosition();
+        bool isToroid = unit.GetCurrentGridType() == GridType.Toroid;
+        var activeGridSystem = unit.GetGridContext().GetGridSystem();
+
+        List<GridPosition> validEnergyPositions = new List<GridPosition>();
+        validEnergyPositions.Add(unitGridPos); // La casilla central siempre se energiza
+
+        // 1. REGLA CÓSMICA: Verificamos si la clase primaria es Cósmica para extender alcance
+        bool isCosmic = currentAspect.GetPrimaryClass() == EmotypePrimaryClass.Cosmico;
+        int maxReachStep = isCosmic ? 2 : 1; // Si es Cósmico alcanza 2 casillas, si no 1
+
+        foreach (EnergyDirection baseDirection in currentAspect.GetActiveDirections())
+        {
+            int baseDirIndex = (int)baseDirection;
+            int rotatedDirIndex = (baseDirIndex + rotationOffset) % 8;
+            EnergyDirection finalDirection = (EnergyDirection)rotatedDirIndex;
+
+            // Calculamos el offset base de 1 dirección
+            GridPosition baseOffset = EnergyGridExtensions.GetDirectionOffset(finalDirection);
+
+            // 2. Iteramos desde la paso 1 hasta el alcance máximo (1 o 2)
+            for (int step = 1; step <= maxReachStep; step++)
+            {
+                // Multiplicamos el offset por el paso actual
+                GridPosition currentStepOffset = new GridPosition(baseOffset.x * step, baseOffset.z * step);
+                GridPosition targetPos = unitGridPos + currentStepOffset;
+
+                // Envoltura Toroidal
+                if (isToroid && ToroidLevelGrid.ToroidInstance != null)
+                {
+                    targetPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(targetPos);
+                }
+
+                // Filtro Geométrico de adyacencia y límites de mapa
+                if (activeGridSystem.IsValidGridPosition(targetPos))
+                {
+                    GridObject originNode = activeGridSystem.GetGridObject(unitGridPos) as GridObject;
+                    if (originNode != null && originNode.GetTileType() == TileType.Rhombus)
+                    {
+                        // Bloqueamos salto diagonal desde rombo
+                        if (Mathf.Abs(currentStepOffset.x) > 0 && Mathf.Abs(currentStepOffset.z) > 0)
+                        {
+                            continue;
+                        }
+                    }
+
+                    // Si la casilla es válida, la agregamos al mapa de energía
+                    if (!validEnergyPositions.Contains(targetPos))
+                    {
+                        validEnergyPositions.Add(targetPos);
+                    }
+                }
+                else
+                {
+                    // Si la primera casilla no es válida o choca fuera de límites en grid normal,
+                    // rompemos el paso para no proyectar casillas flotantes más allá.
+                    if (!isToroid) break;
+                }
+            }
+        }
+
+        return validEnergyPositions;
+    }
+    
+    // Devuelve la lista de posiciones de la cuadrícula que están actualmente 
+    // energizadas por el aspecto de esta unidad.
+    public List<GridPosition> GetEnergizedPositionsLegacy()
     {
         if (currentAspect == null)
         {
