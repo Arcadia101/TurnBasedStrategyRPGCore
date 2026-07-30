@@ -134,7 +134,7 @@ public class GridSystemVisual : MonoBehaviour
         UpdateGridVisual();
     }
 
-    protected Color GetGridVisualColor(GridVisualType gridVisualType)
+    public Color GetGridVisualColor(GridVisualType gridVisualType)
     {
         foreach (GridVisualTypeColor gridVisualTypeColor in gridVisualTypeColorList)
         {

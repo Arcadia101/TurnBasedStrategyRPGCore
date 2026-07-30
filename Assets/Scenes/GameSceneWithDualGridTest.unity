@@ -2031,6 +2031,9 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 6314060414634135025, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
+      insertIndex: 11
+      addedObject: {fileID: 1833639422}
+    - targetCorrespondingSourceObject: {fileID: 6314060414634135025, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1833639408}
   m_SourcePrefab: {fileID: 100100000, guid: d2948c86b3689ce4398872bf1c57fe7a, type: 3}
@@ -5589,6 +5592,50 @@ MonoBehaviour:
       BarrelClipping: 0.25
       Anamorphism: 0
   BlendHint: 0
+--- !u!1 &1202765170
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1202765172}
+  - component: {fileID: 1202765171}
+  m_Layer: 0
+  m_Name: GridEnergyVisualBridge
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1202765171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202765170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18a7b5f158551e84a85c0033fbdc6e9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GridEnergyVisualBridge
+--- !u!4 &1202765172
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1202765170}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.00432, y: 0, z: -1.86236}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1247157567
 GameObject:
   m_ObjectHideFlags: 0
@@ -7129,6 +7176,19 @@ MonoBehaviour:
   currentAspect: {fileID: 11400000, guid: 37d894b1fc0857d42bd9571bd05a4788, type: 2}
   hasOverlappedEnergy: 0
   rotationOffset: 0
+--- !u!114 &1833639422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1257936282}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7add7d875f15dab44ac2d93045365d48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateEnergyAction
+  ActionPointsCost: 0
 --- !u!1001 &1842975727
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8567,3 +8627,4 @@ SceneRoots:
   - {fileID: 1247157569}
   - {fileID: 2086509673}
   - {fileID: 1292208759}
+  - {fileID: 1202765172}

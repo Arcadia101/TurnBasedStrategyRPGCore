@@ -141,14 +141,17 @@ public class UnitEnergy : MonoBehaviour
     
         Debug.Log($"[CEREBRO-ENERGÍA] {name} estado de solapamiento: {hasOverlappedEnergy}");
     }
-    
-    
+
+    public EmotypeData GetCurrentAspect()
+    {
+        return currentAspect;
+    }
 
     // Método utilitario para cambiar de aspecto dinámicamente en el futuro si se cumplen los objetivos
     public void SetEmotype(EmotypeData newEmotype)
     {
         currentAspect = newEmotype;
-        rotationOffset = 0; // REGLA: El nuevo aspecto entra limpio de fábrica
+        //rotationOffset = 0; // REGLA: El nuevo aspecto entra limpio de fábrica
         unit.GetGridContext().TriggerEnergyRefresh(); // Alerta inmediata de que cambió un patrón de energía
     }
     
