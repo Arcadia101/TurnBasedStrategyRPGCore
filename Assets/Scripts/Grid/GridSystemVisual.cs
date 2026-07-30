@@ -147,6 +147,76 @@ public class GridSystemVisual : MonoBehaviour
         return Color.white;
     }
     
+    public GridVisualType SetEnergyColor(EmotypeData currentAspect)
+{
+    if (currentAspect == null) 
+        return GridVisualType.BlueSoft;
+
+    EmotypePrimaryClass primaryClass = currentAspect.GetPrimaryClass();
+
+    // REGLA ESPECIAL: Si es Cósmico, delegamos la decisión de color a la clase secundaria
+    if (primaryClass == EmotypePrimaryClass.Cosmico)
+    {
+        EmotypeSecondaryClass secondaryClass = currentAspect.GetSecondaryClass();
+        return GetColorFromSecondaryClass(secondaryClass);
+    }
+
+    // Si no es Cósmico, evaluamos la clase primaria normalmente
+    return GetColorFromPrimaryClass(primaryClass);
+}
+
+//Mapeo para Clases Primarias
+public GridVisualType GetColorFromPrimaryClass(EmotypePrimaryClass primaryClass)
+{
+    switch (primaryClass)
+    {
+        case EmotypePrimaryClass.Rabia:     
+            return GridVisualType.Red;
+        case EmotypePrimaryClass.Asombro:   
+            return GridVisualType.Yellow;
+        case EmotypePrimaryClass.Felicidad: 
+            return GridVisualType.Orange;
+        case EmotypePrimaryClass.Amor:      
+            return GridVisualType.Pink;
+        case EmotypePrimaryClass.Tristeza:  
+            return GridVisualType.Blue;
+        case EmotypePrimaryClass.Asco:      
+            return GridVisualType.Green;
+        case EmotypePrimaryClass.Deseo:     
+            return GridVisualType.Purple;
+        case EmotypePrimaryClass.Miedo:     
+            return GridVisualType.Gray;
+        default:                            
+            return GridVisualType.BlueSoft;
+    }
+}
+
+// Mapeo para Clases Secundarias (cuando la primaria es Cósmico)
+public GridVisualType GetColorFromSecondaryClass(EmotypeSecondaryClass secondaryClass)
+{
+    switch (secondaryClass)
+    {
+        case EmotypeSecondaryClass.Rabia:     
+            return GridVisualType.Red;
+        case EmotypeSecondaryClass.Asombro:   
+            return GridVisualType.Yellow;
+        case EmotypeSecondaryClass.Felicidad: 
+            return GridVisualType.Orange;
+        case EmotypeSecondaryClass.Amor:      
+            return GridVisualType.Pink;
+        case EmotypeSecondaryClass.Tristeza:  
+            return GridVisualType.Blue;
+        case EmotypeSecondaryClass.Asco:      
+            return GridVisualType.Green;
+        case EmotypeSecondaryClass.Deseo:     
+            return GridVisualType.Purple;
+        case EmotypeSecondaryClass.Miedo:     
+            return GridVisualType.Gray;
+        default:                              
+            return GridVisualType.BlueSoft;
+    }
+}
+    
     protected virtual void UpdateGridVisual()
     {
         ResetAllGridPositions();

@@ -81,59 +81,67 @@ public class GridEnergyVisualBridge : MonoBehaviour
         }
     }
     
-    public Color SetEnergyColor(EmotypeData currentAspect)
-    {
-        EmotypePrimaryClass currentAspectClass = currentAspect.GetPrimaryClass();
-        
-        Color color = Color.white;
-        switch (currentAspectClass)
-        {
-            case EmotypePrimaryClass.Rabia:
-                //setColor.
-                break;
-            case EmotypePrimaryClass.Asombro:
-                break;
-            case EmotypePrimaryClass.Felicidad:
-                break;
-            case EmotypePrimaryClass.Amor:
-                break;
-            case EmotypePrimaryClass.Tristeza:
-                break;
-            case EmotypePrimaryClass.Asco:
-                break;
-            case EmotypePrimaryClass.Deseo:
-                break;
-            case EmotypePrimaryClass.Miedo:
-                break;
-            default:
-                break;
-        }
-        return color;
-    }
-
-    
-    // Lee tu globalEnergyMap y aplica Blue o Gray usando tu método nativo de materiales.
+    // Lee tu globalEnergyMap y aplica el correspondiente usando tu método nativo de materiales.
     private void ApplyEnergyToVisuals(LevelGrid gridContext, GridSystemVisual visualContext)
+{
+    var globalEnergyMap = gridContext.GetGlobalEnergyMap();
+    if (globalEnergyMap == null) return;
+
+    // Obtenemos el color para solapamientos usando el tipo Brown que ya existe
+    Color overlapColor = visualContext.GetGridVisualColor(GridSystemVisual.GridVisualType.Brown);
+
+    foreach (var kvp in globalEnergyMap)
     {
-        var globalEnergyMap = gridContext.GetGlobalEnergyMap();
-        if (globalEnergyMap == null) return;
+        GridPosition cellPos = kvp.Key;
+        List<Unit> unitsProjecting = kvp.Value;
 
-        Color energyColor = visualContext.GetGridVisualColor(GridSystemVisual.GridVisualType.Blue);
-        Color overlapColor = visualContext.GetGridVisualColor(GridSystemVisual.GridVisualType.Gray);
+        if (unitsProjecting == null || unitsProjecting.Count == 0) continue;
 
-        foreach (var kvp in globalEnergyMap)
+        var visualSingle = visualContext.GetGridSystemVisualSingleAtPosition(cellPos);
+        if (visualSingle == null) continue;
+
+        Color targetColor;
+
+        // Regla 1: Solapamiento (> 1 unidad) -> Gris
+        if (unitsProjecting.Count > 1)
         {
-            GridPosition cellPos = kvp.Key;
-            List<Unit> unitsProjecting = kvp.Value;
-
-            if (unitsProjecting == null || unitsProjecting.Count == 0) continue;
-
-            var visualSingle = visualContext.GetGridSystemVisualSingleAtPosition(cellPos);
-            if (visualSingle == null) continue;
-
-            Color targetColor = (unitsProjecting.Count > 1) ? overlapColor : energyColor;
-
-            visualSingle.UpdateTileDefaultColor(targetColor);
+            targetColor = overlapColor;
         }
+        else
+        {
+            // Regla 2: Una sola unidad -> Consultamos su EmotypePrimaryClass
+            Unit singleUnit = unitsProjecting[0];
+            UnitEnergy unitEnergy = singleUnit.GetComponent<UnitEnergy>();
+
+            if (unitEnergy != null)
+            {
+                // 1. Obtenemos el aspecto desde UnitEnergy
+                EmotypeData aspect = unitEnergy.GetCurrentAspect(); 
+
+                if (aspect != null)
+                {
+                    // 2. Extraemos la variable externa (EmotypePrimaryClass)
+                    EmotypePrimaryClass primaryClass = aspect.GetPrimaryClass();
+
+                    // 3. Le pedimos a GridSystemVisual el GridVisualType que mapea con esa emoción
+                    GridSystemVisual.GridVisualType visualType = visualContext.SetEnergyColor(primaryClass);
+
+                    // 4. Obtenemos el Color exacto que ya tienes configurado en el Inspector
+                    targetColor = visualContext.GetGridVisualColor(visualType);
+                }
+                else
+                {
+                    targetColor = visualContext.GetGridVisualColor(GridSystemVisual.GridVisualType.Gray);
+                }
+            }
+            else
+            {
+                targetColor = visualContext.GetGridVisualColor(GridSystemVisual.GridVisualType.Gray);
+            }
+        }
+
+        // Aplicamos el color al tile
+        visualSingle.UpdateTileDefaultColor(targetColor);
     }
+}
 }
