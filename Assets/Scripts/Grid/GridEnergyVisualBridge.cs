@@ -120,13 +120,10 @@ public class GridEnergyVisualBridge : MonoBehaviour
 
                 if (aspect != null)
                 {
-                    // 2. Extraemos la variable externa (EmotypePrimaryClass)
-                    EmotypePrimaryClass primaryClass = aspect.GetPrimaryClass();
+                    // 2. Le pedimos a GridSystemVisual el GridVisualType que mapea con esa emoción
+                    GridSystemVisual.GridVisualType visualType = visualContext.SetEnergyColor(aspect);
 
-                    // 3. Le pedimos a GridSystemVisual el GridVisualType que mapea con esa emoción
-                    GridSystemVisual.GridVisualType visualType = visualContext.SetEnergyColor(primaryClass);
-
-                    // 4. Obtenemos el Color exacto que ya tienes configurado en el Inspector
+                    // 3. Obtenemos el Color exacto que ya tienes configurado en el Inspector
                     targetColor = visualContext.GetGridVisualColor(visualType);
                 }
                 else
