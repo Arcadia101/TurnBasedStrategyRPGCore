@@ -22,9 +22,28 @@ public class TurnSystem : MonoBehaviour
     public void NextTurn()
     {
         turnNumber++;
-        isPlayerTurn = !isPlayerTurn;
-        
+        isPlayerTurn = (turnNumber % 2 != 0); // Turnos impares = Jugador 1
+
+        // REGLA: Si el turno es impar, se restauran los gestos de todas las unidades
+        if (turnNumber % 2 != 0)
+        {
+            RestoreAllUnitsGestures();
+        }
+
         OnTurnChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void RestoreAllUnitsGestures()
+    {
+        // Obtenemos todas las unidades de la escena a través de tu UnitManager / LevelGrid
+        foreach (Unit unit in UnitManager.Instance.GetUnitList())
+        {
+            HealthSystem healthSystem = unit.GetComponent<HealthSystem>();
+            if (healthSystem != null)
+            {
+                healthSystem.RestoreAllGestureUses();
+            }
+        }
     }
     
     public int GetTurnNumber()

@@ -1,28 +1,29 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 
 public class UnitActionSystem : MonoBehaviour
 {
     public static UnitActionSystem Instance { get; private set; }
-    
+
     public event EventHandler OnSelectedUnitChanged;
     public event EventHandler OnSelectedActionChanged;
     public event EventHandler<bool> OnBusyChanged;
     public event EventHandler OnActionStarted;
-    
+    public event Action<LevelGrid> OnActiveGridChanged;
+
     [SerializeField] private Unit selectedUnit;
     [SerializeField] private LayerMask unitLayer;
-    
+
     private BaseAction selectedAction;
     private int currentActionIndex = 0; // Registra el índice de la acción seleccionada con el mando
     private bool isBusy;
-    
+
     [Header("Grid Context Warp")]
     private LevelGrid currentActiveGrid; // El mapa que el jugador está operando actualmente
-    
+
     public LevelGrid GetCurrentActiveGrid() => currentActiveGrid;
 
     private void Awake()
@@ -31,17 +32,23 @@ public class UnitActionSystem : MonoBehaviour
         {
             Debug.LogError("There is already a UnitActionSystem in the scene!");
             Destroy(gameObject);
+            return;
         }
         Instance = this;
     }
-
 
     private void Start()
     {
         // Al arrancar el juego, por defecto el jugador opera en la Grid Normal
         currentActiveGrid = LevelGrid.Instance;
-        
+
         SetSelectedUnit(selectedUnit);
+
+        // Suscripción al cambio de plano de la cámara
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.OnPlaneChanged += HandlePlaneChanged;
+        }
     }
 
     private void Update()
@@ -49,12 +56,7 @@ public class UnitActionSystem : MonoBehaviour
         // candado del Turno del Jugador e Interfaz de Usuario (UI)
         if (!TurnSystem.Instance.IsPlayerTurn()) return;
         if (EventSystem.current.IsPointerOverGameObject()) return;
-        
-        if (InputManager.Instance.WasSwitchGridPressed())
-        {
-            SwitchGridContextWarp();
-        }
-        
+
         // --- NUEVO CANDADO INTELIGENTE (SEMI-BUSY) ---
         if (isBusy)
         {
@@ -66,15 +68,14 @@ public class UnitActionSystem : MonoBehaviour
                 if (HandleTargetOrUnitCycling()) return;
                 if (TryHandleSelectedAction()) return;
             }
-            
 
             // Si está Busy y la acción NO está esperando objetivo (ej: la bala ya va volando o el personaje se está moviendo),
             // bloqueamos por completo el input como siempre.
-            return; 
+            return;
         }
-        
+
         // --- FLUJO LIBRE DEL JUEGO (CUANDO ISBUSY ES FALSO) ---
-    
+
         // 1. Ciclar entre las acciones disponibles de la unidad (Arriba/Abajo)
         if (HandleActionCycling()) return;
 
@@ -86,41 +87,37 @@ public class UnitActionSystem : MonoBehaviour
 
         // 4. Seleccionar una unidad directamente en la grid
         if (TryHandleUnitSelection()) return;
-    
+
         // 5. Deseleccionar si confirmamos en el vacío
         if (InputManager.Instance.WasConfirmPressedThisFrame() && selectedUnit != null)
         {
             SetSelectedUnit(null);
         }
     }
-    
-    private void SwitchGridContextWarp()
+
+    private void HandlePlaneChanged(GridType targetPlane)
     {
-        if (ToroidLevelGrid.ToroidInstance == null) return;
-
-        // Intercambiamos el contexto de la Grid activa
-        if (currentActiveGrid == LevelGrid.Instance)
-        {
-            currentActiveGrid = ToroidLevelGrid.ToroidInstance;
-            Debug.Log("[WARP-SISTEMA] Cambiando a Grid TOROIDAL.");
-        }
-        else
-        {
-            currentActiveGrid = LevelGrid.Instance;
-            Debug.Log("[WARP-SISTEMA] Cambiando a Grid NORMAL.");
-        }
-
-        // Le avisamos al GridPointer que re-ajuste su posición física de inmediato a la nueva Grid
-        if (GridPointer.Instance != null)
-        {
-            GridPointer.Instance.RefreshGridContext(currentActiveGrid);
-        }
+        LevelGrid targetGrid = (targetPlane == GridType.Normal) ? LevelGrid.Instance : ToroidLevelGrid.Instance;
+        SetCurrentActiveGrid(targetGrid);
     }
-    
+
+    public void SetCurrentActiveGrid(LevelGrid newGrid)
+    {
+        if (currentActiveGrid == newGrid || newGrid == null) return;
+
+        currentActiveGrid = newGrid;
+
+        // Notificamos al puntero y a cualquier otro listener (UI, selección, etc.)
+        OnActiveGridChanged?.Invoke(currentActiveGrid);
+
+        // Deseleccionar unidad
+        SetSelectedUnit(null);
+    }
+
     private bool HandleActionCycling()
     {
         int direction = 0;
-    
+
         // Evaluamos tus nuevos métodos del InputManager para el mando/teclado
         if (InputManager.Instance.WasCycleUpPressed()) direction = -1;    // Dirección hacia arriba en la barra
         if (InputManager.Instance.WasCycleDownPressed()) direction = 1;   // Dirección hacia abajo en la barra
@@ -128,11 +125,14 @@ public class UnitActionSystem : MonoBehaviour
         // Si no se presionó ningún botón de ciclo, salimos de inmediato
         if (direction == 0) return false;
 
+        // Si no hay unidad seleccionada, no podemos ciclar acciones
+        if (selectedUnit == null) return false;
+
         // Obtenemos el array de acciones que tiene la unidad seleccionada actualmente
         BaseAction[] unitActionArray = selectedUnit.GetBaseActionArray();
 
         // Si la unidad por alguna razón no tiene acciones (seguridad), salimos
-        if (unitActionArray.Length == 0) return false;
+        if (unitActionArray == null || unitActionArray.Length == 0) return false;
 
         // Calculamos el nuevo índice usando la magia matemática del ciclo infinito
         currentActionIndex = (currentActionIndex + direction + unitActionArray.Length) % unitActionArray.Length;
@@ -164,7 +164,7 @@ public class UnitActionSystem : MonoBehaviour
             selectedAction.CycleTarget(cycleDirection);
             return true; // El input fue consumido
         }
-        
+
         // Si no, ciclado global de unidades
         return CycleFriendlyUnitsGlobal(cycleDirection);
     }
@@ -173,7 +173,7 @@ public class UnitActionSystem : MonoBehaviour
     private bool CycleFriendlyUnitsGlobal(int direction)
     {
         List<Unit> friendlyUnits = UnitManager.Instance.GetFriendlyUnitList();
-        if (friendlyUnits.Count == 0) return false;
+        if (friendlyUnits == null || friendlyUnits.Count == 0) return false;
 
         int currentIndex = friendlyUnits.IndexOf(selectedUnit);
 
@@ -195,34 +195,10 @@ public class UnitActionSystem : MonoBehaviour
         return true;
     }
 
-    private bool TryHandleSelectedActionLegacy()
-    {
-        if (InputManager.Instance.WasConfirmPressedThisFrame())
-        {
-            // Ahora la posición objetivo es la que marca nuestro GridPointer
-            GridPosition pointerGridPosition = GridPointer.Instance.GetGridPosition();
-            
-            if (selectedUnit != null && selectedAction != null && selectedAction.IsValidActionGridPosition(pointerGridPosition))
-            {
-                if (selectedUnit.TrySpendActionPointsOrMovePointsToTakeActionOrMove(selectedAction))
-                {
-                    SetBusy();
-                    selectedAction.TakeAction(pointerGridPosition, UnsetBusy);
-                    
-                    OnActionStarted?.Invoke(this, EventArgs.Empty);
-                    
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-    
     private bool TryHandleSelectedAction()
-{
-    if (InputManager.Instance.WasConfirmPressedThisFrame())
     {
+        if (!InputManager.Instance.WasConfirmPressedThisFrame()) return false;
+
         // Obtenemos la posición lógica de la cuadrícula
         GridPosition pointerGridPosition = GridPointer.Instance.GetGridPosition();
 
@@ -232,29 +208,10 @@ public class UnitActionSystem : MonoBehaviour
         // Si ya hay una acción activa y está en modo Semi-Busy esperando objetivo...
         if (selectedAction != null && selectedAction.IsAwaitingTargetSelection())
         {
-            // Intentamos hacer un "cast" seguro a ShootAction para llamar a su confirmación manual
-            if (selectedAction is ShootAction shootAction)
+            if (TryConfirmAwaitingAction(selectedAction))
             {
-                if (shootAction.ConfirmSelectedTarget())
-                {
-                    // Retornamos true porque consumimos el input; el tiro ya va en camino y el
-                    // estado de ShootAction cambiará internamente a State.Shooting.
-                    return true; 
-                }
+                return true;
             }
-            else if (selectedAction is HealAction healAction)
-            {
-                // Retornamos true porque consumimos el input; el tiro ya va en camino y el
-                // estado de ShootAction cambiará internamente a State.Healing.
-                if (healAction.ConfirmSelectedTarget()) return true;
-            }
-            
-            else if (selectedAction is RotateEnergyAction rotateEnergyAction)
-            {
-                if (rotateEnergyAction.ConfirmRotation()) return true;
-            }
-            // NOTA DE EXPANSION: Aquí añadir a futuro las otras acciones:
-            // else if (selectedAction is SwordAction swordAction) { ... } etc.
         }
 
         // =================================================================
@@ -270,38 +227,43 @@ public class UnitActionSystem : MonoBehaviour
                 if (selectedUnit.TrySpendActionPointsOrMovePointsToTakeActionOrMove(selectedAction))
                 {
                     SetBusy(); // Activamos el estado Busy del sistema inmediatamente
-                    
+
                     // Iniciamos la acción física (esto pondrá a ShootAction en State.Aiming)
                     selectedAction.TakeAction(pointerGridPosition, UnsetBusy);
-                    
+
                     OnActionStarted?.Invoke(this, EventArgs.Empty);
                     return true;
                 }
             }
         }
+
+        return false;
+    }
+    
+    // Maneja la confirmación secundaria de acciones en fase de apuntado/espera
+    private bool TryConfirmAwaitingAction(BaseAction action)
+    {
+        switch (action)
+        {
+            case ShootAction shootAction when shootAction.ConfirmSelectedTarget():
+            case HealAction healAction when healAction.ConfirmSelectedTarget():
+            case RotateEnergyAction rotateEnergyAction when rotateEnergyAction.ConfirmRotation():
+                return true;
+
+            // NOTA DE EXPANSION: Aquí añadir a futuro las otras acciones (ej: SwordAction, etc.)
+            default:
+                return false;
+        }
     }
 
-    return false;
-}
-
-
     public bool TryHandleUnitSelection()
-{
-    if (InputManager.Instance.WasConfirmPressedThisFrame())
     {
-        GridPosition targetGridPosition;
+        if (!InputManager.Instance.WasConfirmPressedThisFrame()) return false;
 
         // 1. Obtener la casilla seleccionada dependiendo del control activo.
-        // Necesitarás crear un método en tu InputManager que te diga si usas ratón.
-        if (InputManager.Instance.IsUsingMouse()) 
-        {
-            // Usa el script MouseWorld que ya tienes para obtener el punto 3D y convertirlo a GridPosition
-            targetGridPosition = currentActiveGrid.GetGridPosition(MouseWorld.GetPosition());
-        }
-        else 
-        {
-            targetGridPosition = GridPointer.Instance.GetGridPosition();
-        }
+        GridPosition targetGridPosition = InputManager.Instance.IsUsingMouse()
+            ? currentActiveGrid.GetGridPosition(MouseWorld.GetPosition())
+            : GridPointer.Instance.GetGridPosition();
 
         // 2. Buscar unidades en esa casilla
         List<Unit> unitsOnTile = currentActiveGrid.GetUnitListAtGridPosition(targetGridPosition);
@@ -310,19 +272,12 @@ public class UnitActionSystem : MonoBehaviour
         // sepa que puede intentar ejecutar una acción o deseleccionar.
         if (unitsOnTile == null || unitsOnTile.Count == 0)
         {
-            return false; 
+            return false;
         }
 
         // 3. Lógica de selección y ciclado
         // Filtramos solo las unidades amigas
-        List<Unit> friendlyUnits = new List<Unit>();
-        foreach (Unit unit in unitsOnTile)
-        {
-            if (!unit.IsEnemy())
-            {
-                friendlyUnits.Add(unit);
-            }
-        }
+        List<Unit> friendlyUnits = unitsOnTile.Where(unit => !unit.IsEnemy()).ToList();
 
         if (friendlyUnits.Count > 0)
         {
@@ -340,10 +295,9 @@ public class UnitActionSystem : MonoBehaviour
             }
             return true;
         }
-    }
 
-    return false;
-}
+        return false;
+    }
 
     private void SetBusy()
     {
@@ -360,25 +314,25 @@ public class UnitActionSystem : MonoBehaviour
     private void SetSelectedUnit(Unit unit)
     {
         selectedUnit = unit;
-        
         SetSelectedAction(null);
-
         OnSelectedUnitChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public Unit GetSelectedUnit()
-    {
-        return selectedUnit;
-    }
-    
+    public Unit GetSelectedUnit() => selectedUnit;
+
     public void SetSelectedAction(BaseAction action)
     {
         selectedAction = action;
         OnSelectedActionChanged?.Invoke(this, EventArgs.Empty);
     }
-    
-    public BaseAction GetSelectedAction()
+
+    public BaseAction GetSelectedAction() => selectedAction;
+
+    private void OnDestroy()
     {
-        return selectedAction;
+        if (CameraManager.Instance != null)
+        {
+            CameraManager.Instance.OnPlaneChanged -= HandlePlaneChanged;
+        }
     }
 }

@@ -809,13 +809,13 @@ GameObject:
   - component: {fileID: 6536924919189268003}
   - component: {fileID: 9182409222316314108}
   - component: {fileID: 3884391607846025773}
-  - component: {fileID: 5721112675720794914}
   - component: {fileID: 5369258130610472144}
-  - component: {fileID: 3622074950529835149}
-  - component: {fileID: 8169405309874219616}
-  - component: {fileID: 3712069582973009697}
   - component: {fileID: 1605937745382352134}
   - component: {fileID: 3738441792369573426}
+  - component: {fileID: 3423633156608136033}
+  - component: {fileID: 1804955146152787093}
+  - component: {fileID: 4938276492777166032}
+  - component: {fileID: 3486708029221301011}
   m_Layer: 7
   m_Name: Unit
   m_TagString: Untagged
@@ -915,25 +915,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MoveAction
   ActionPointsCost: 1
   maxMoveDistance: 1
---- !u!114 &5721112675720794914
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6314060414634135025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3e8e4a05bb8a3542b339bada45938b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpinAction
-  ActionPointsCost: 1
-  maxHealDistance: 5
-  healAmount: 30
-  aimingTime: 0.1
-  healTime: 0.1
-  cooloffTime: 0.5
-  rotateSpeed: 10
 --- !u!114 &5369258130610472144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -955,55 +936,6 @@ MonoBehaviour:
   shootTime: 0.1
   cooloffTime: 0.5
   rotateSpeed: 10
---- !u!114 &3622074950529835149
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6314060414634135025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cd2ce1a94063644da535ea8d6b9731d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::GrenadeAction
-  ActionPointsCost: 1
-  grenadePrefab: {fileID: 2103136237908101357, guid: a78f486c769f42d448eb3b5f72eb5e5b, type: 3}
-  obstaclesLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
-  maxthrowDistance: 7
---- !u!114 &8169405309874219616
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6314060414634135025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6b6adccf7fa9dfd43a3e5158a980a50d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SwordAction
-  ActionPointsCost: 1
-  maxSwordDistance: 1
-  afterHitStateTime: 0.5
-  beforeHitStateTime: 0.7
-  rotateSpeed: 10
---- !u!114 &3712069582973009697
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6314060414634135025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f3fb0c1b188df874fb44e9df02a39c8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::InteractAction
-  ActionPointsCost: 1
-  maxInteractDistance: 1
 --- !u!65 &1605937745382352134
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1039,6 +971,60 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitRagdollSpawner
   ragdollPrefab: {fileID: 6173891613177242039, guid: 51384a6bbf77b41419c7c4c7806f6b68, type: 3}
   originalRootBone: {fileID: 2143954039287762367}
+--- !u!114 &3423633156608136033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: caa8275386874f5f9175d98c9a9b5922, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ConfrontAction
+  ActionPointsCost: 1
+--- !u!114 &1804955146152787093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bb6769f1eaf434dabbd66b81aa94549, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EvadeAction
+  ActionPointsCost: 1
+--- !u!114 &4938276492777166032
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7add7d875f15dab44ac2d93045365d48, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RotateEnergyAction
+  ActionPointsCost: 1
+--- !u!114 &3486708029221301011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6314060414634135025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27c860373cb95d640920aa344fabe6fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitEnergy
+  currentAspect: {fileID: 0}
+  hasOverlappedEnergy: 0
+  rotationOffset: 0
 --- !u!1 &7625631952971024137
 GameObject:
   m_ObjectHideFlags: 0

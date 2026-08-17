@@ -11,7 +11,7 @@ public class GridPointer : MonoBehaviour
     private GridPosition currentGridPosition;
     private Vector2 lastMousePosition;
     private float pointerMoveTimer;
-    private const float POINTER_MOVE_SPEED = 0.15f; // Ligeramente más rápido para un control de 8 direcciones más ágil
+    private const float POINTER_MOVE_SPEED = 0.15f;
 
     private LevelGrid activeGrid;
     
@@ -19,7 +19,6 @@ public class GridPointer : MonoBehaviour
     {
         if (Instance != null)
         {
-            Debug.LogError("There is already a GridPointer in the scene!");
             Destroy(gameObject);
             return;
         }
@@ -28,21 +27,25 @@ public class GridPointer : MonoBehaviour
 
     private void Start()
     {
-        // Al arrancar, se sincroniza con la Grid por defecto del UnitActionSystem
+        // Grid inicial
         activeGrid = LevelGrid.Instance;
-        
-        currentGridPosition = new GridPosition(LevelGrid.Instance.GetWidth() / 2, LevelGrid.Instance.GetHeight() / 2);
+        currentGridPosition = new GridPosition(activeGrid.GetWidth() / 2, activeGrid.GetHeight() / 2);
         UpdatePointerPosition();
+
+        // Escuchamos el cambio reactivo de grid
+        if (UnitActionSystem.Instance != null)
+        {
+            UnitActionSystem.Instance.OnActiveGridChanged += HandleActiveGridChanged;
+        }
+    }
+
+    private void HandleActiveGridChanged(LevelGrid newGrid)
+    {
+        RefreshGridContext(newGrid);
     }
 
     void Update()
     {
-        // Nos aseguramos de estar escuchando siempre la Grid que el sistema tenga activa
-        if (UnitActionSystem.Instance != null)
-        {
-            activeGrid = UnitActionSystem.Instance.GetCurrentActiveGrid();
-        }
-        
         Vector2 currentMousePosition = InputManager.Instance.GetMouseScreenPosition();
         
         // Prioridad 1: Ratón
@@ -58,7 +61,7 @@ public class GridPointer : MonoBehaviour
                 }
             }
         }
-        // Prioridad 2: Mando/Teclado (Relativo a la Cámara y en 8 Direcciones)
+        // Prioridad 2: Mando/Teclado (8 Direcciones relativo a la cámara activa)
         else
         {
             pointerMoveTimer -= Time.deltaTime;
@@ -70,23 +73,19 @@ public class GridPointer : MonoBehaviour
                 {
                     pointerMoveTimer = POINTER_MOVE_SPEED;
 
-                    // 1. Convertir el input 2D en una dirección 3D basada en hacia dónde mira la cámara
                     Vector3 cameraForward = Camera.main.transform.forward;
-                    cameraForward.y = 0; // Ignoramos la inclinación hacia abajo/arriba de la cámara
+                    cameraForward.y = 0;
                     cameraForward.Normalize();
                     
                     Vector3 cameraRight = Camera.main.transform.right;
                     cameraRight.y = 0;
                     cameraRight.Normalize();
 
-                    // La dirección en el mundo hacia la que el jugador quiere mover el cursor
                     Vector3 desiredWorldDir = (cameraForward * pointerInput.y + cameraRight * pointerInput.x).normalized;
 
-                    // 2. Buscar cuál de las 8 casillas vecinas se alinea mejor con esa dirección
                     GridPosition bestNeighbor = currentGridPosition;
-                    float bestAlignment = -2f; // El mínimo posible del Dot Product es -1
+                    float bestAlignment = -2f;
 
-                    // Los 8 offsets posibles (Cardinales y Diagonales en el Grid)
                     List<GridPosition> neighborOffsets = new List<GridPosition>
                     {
                         new GridPosition(1, 0), new GridPosition(-1, 0), new GridPosition(0, 1), new GridPosition(0, -1),
@@ -98,15 +97,12 @@ public class GridPointer : MonoBehaviour
                     foreach (GridPosition offset in neighborOffsets)
                     {
                         GridPosition neighborPos = currentGridPosition + offset;
-                        
                         if (!activeGrid.IsValidGridPosition(neighborPos)) continue;
 
                         Vector3 neighborWorldPos = activeGrid.GetWorldPosition(neighborPos);
                         Vector3 directionToNeighbor = (neighborWorldPos - currentWorldPos).normalized;
 
-                        // El Dot Product nos dice cuán alineadas están dos direcciones (1 es perfecto, 0 es perpendicular, -1 es opuesto)
                         float alignment = Vector3.Dot(desiredWorldDir, directionToNeighbor);
-
                         if (alignment > bestAlignment)
                         {
                             bestAlignment = alignment;
@@ -114,8 +110,6 @@ public class GridPointer : MonoBehaviour
                         }
                     }
 
-                    // 3. Mover a ese vecino si la intención es clara
-                    // 0.38f asegura que se mueva incluso si el joystick no está perfectamente alineado
                     if (bestAlignment > 0.38f) 
                     {
                         currentGridPosition = bestNeighbor;
@@ -124,7 +118,6 @@ public class GridPointer : MonoBehaviour
             }
             else if (InputManager.Instance.GetPointerMoveVector().sqrMagnitude < 0.1f)
             {
-                // Reseteamos el temporizador al soltar para que la respuesta sea inmediata la próxima vez
                 pointerMoveTimer = 0f;
             }
         }
@@ -136,20 +129,23 @@ public class GridPointer : MonoBehaviour
     private void UpdatePointerPosition()
     {
         Vector3 targetWorldPos = activeGrid.GetWorldPosition(currentGridPosition);
-        transform.position = Vector3.Lerp(transform.position, targetWorldPos, Time.deltaTime * 20f); // Un Lerp un poco más rápido para las 8 direcciones
+        transform.position = Vector3.Lerp(transform.position, targetWorldPos, Time.deltaTime * 20f);
     }
     
     public void RefreshGridContext(LevelGrid newGrid)
     {
         activeGrid = newGrid;
-        // Mantenemos la misma 'currentGridPosition' (ej: 1,3), pero recalculamos instantáneamente su posición física en metros
+
+        // Aseguramos que la posición sea válida en el nuevo grid
+        if (!activeGrid.IsValidGridPosition(currentGridPosition))
+        {
+            currentGridPosition = new GridPosition(activeGrid.GetWidth() / 2, activeGrid.GetHeight() / 2);
+        }
+
         transform.position = activeGrid.GetWorldPosition(currentGridPosition);
     }
 
-    public GridPosition GetGridPosition()
-    {
-        return currentGridPosition;
-    }
+    public GridPosition GetGridPosition() => currentGridPosition;
 
     public void SnapToGridPosition(GridPosition newGridPosition)
     {
@@ -157,6 +153,14 @@ public class GridPointer : MonoBehaviour
         {
             currentGridPosition = newGridPosition;
             transform.position = activeGrid.GetWorldPosition(currentGridPosition);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (UnitActionSystem.Instance != null)
+        {
+            UnitActionSystem.Instance.OnActiveGridChanged -= HandleActiveGridChanged;
         }
     }
 }

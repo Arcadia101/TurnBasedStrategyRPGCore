@@ -1,21 +1,50 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HealthSystem : MonoBehaviour
 {
-    public event EventHandler OnDead;
-    //public event EventHandler OnHealed;  future addition
-    public event EventHandler OnDamaged;
-    
+    // Eventos para la UI y la lógica de juego
+    public event EventHandler OnDamaged;           // Notifica cambios para actualizar barras/animaciones
+    public event EventHandler OnMoodDepleted;       // Llega a 0 -> Se envía a la Arquetopía
+    public event EventHandler OnMoodMaximized;      // Llega al Máximo -> Se Materializa
+
+    [Header("Configuración Base")]
     [SerializeField] private int maxHealth = 100;
     private int health;
-    
+
+    // Lista viva de gestos con sus usos en partida
+    private List<RuntimeGesture> runtimeGestures = new List<RuntimeGesture>();
+
     private void Awake()
     {
-        health = maxHealth/2;
+        health = maxHealth / 2;
     }
+    
+    // Configura la salud y carga los gestos según el EmotypeData equipado
+    public void SetupFromEmotype(EmotypeData emotypeData)
+    {
+        runtimeGestures.Clear();
 
-    public void Damage(int damageAmount)
+        if (emotypeData == null) return;
+
+        maxHealth = emotypeData.GetMaxMoodValue();
+        health = emotypeData.GetInitialMoodValue();
+
+        // Poblamos la lista de gestos disponibles en tiempo de ejecución
+        foreach (GestureData gesture in emotypeData.GetAvailableGestures())
+        {
+            if (gesture != null)
+            {
+                runtimeGestures.Add(new RuntimeGesture(gesture));
+            }
+        }
+
+        OnDamaged?.Invoke(this, EventArgs.Empty);
+    }
+    
+    // Aplica reduccion (reduce los nudos hacia 0 / Arquetopía)
+    public void Release(int damageAmount)
     {
         health -= damageAmount;
 
@@ -28,11 +57,12 @@ public class HealthSystem : MonoBehaviour
 
         if (health == 0)
         {
-            Die();
+            OnMoodDepleted?.Invoke(this, EventArgs.Empty);
         }
     }
-
-    public void Heal(int healAmount)
+    
+    // Aplica aumento (sube los nudos hacia el Máximo / Materialización)
+    public void Restrain(int healAmount)
     {
         health += healAmount;
 
@@ -43,21 +73,25 @@ public class HealthSystem : MonoBehaviour
         
         OnDamaged?.Invoke(this, EventArgs.Empty);
         
-        /*
-        */
-         if (health == maxHealth)
+        if (health == maxHealth)
         {
-            Die();
+            OnMoodMaximized?.Invoke(this, EventArgs.Empty);
         }
     }
     
-    private void Die()
+    // Restaura todos los usos de los gestos (se llamará en turnos impares)
+    public void RestoreAllGestureUses()
     {
-        OnDead?.Invoke(this, EventArgs.Empty);
+        foreach (RuntimeGesture gesture in runtimeGestures)
+        {
+            gesture.ResetUses();
+        }
     }
 
-    public float GetHealthNormalized()
-    {
-        return (float)health / (float)maxHealth;
-    }
+    // --- GETTERS ---
+    public int GetHealth() => health;
+    public int GetMaxHealth() => maxHealth;
+    public float GetHealthNormalized() => (float)health / (float)maxHealth;
+    public List<RuntimeGesture> GetRuntimeGestures() => runtimeGestures;
+    public bool IsAtBoundary() => health <= 0 || health >= maxHealth;
 }

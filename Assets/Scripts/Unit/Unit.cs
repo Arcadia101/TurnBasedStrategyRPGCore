@@ -54,7 +54,7 @@ public class Unit : MonoBehaviour
 
         // 3. Continuamos con el resto de tus inicializaciones y eventos intactos
         TurnSystem.Instance.OnTurnChanged += TurnSystem_OnTurnChanged;
-        healthSystem.OnDead += HealthSystem_OnDead;
+        //healthSystem.OnDead += HealthSystem_OnDead; actualizando.
 
         OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
     }
@@ -244,12 +244,12 @@ public class Unit : MonoBehaviour
 
     public void Damage(int damageAmount)
     {
-        healthSystem.Damage(damageAmount);
+        healthSystem.Release(damageAmount);
     }
 
     public void Heal(int healAmount)
     {
-        healthSystem.Heal(healAmount);
+        healthSystem.Restrain(healAmount);
     }
     
     public float GetHealthNormalized()

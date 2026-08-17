@@ -44,7 +44,6 @@ public class UnitEnergy : MonoBehaviour
     {
         if (currentAspect == null)
         {
-            // Si no hay aspecto, solo la casilla central se energiza
             return new List<GridPosition> { unit.GetGridPosition() };
         }
 
@@ -55,9 +54,11 @@ public class UnitEnergy : MonoBehaviour
         List<GridPosition> validEnergyPositions = new List<GridPosition>();
         validEnergyPositions.Add(unitGridPos); // La casilla central siempre se energiza
 
-        // 1. REGLA CÓSMICA: Verificamos si la clase primaria es Cósmica para extender alcance
         bool isCosmic = currentAspect.GetPrimaryClass() == EmotypePrimaryClass.Cosmico;
-        int maxReachStep = isCosmic ? 2 : 1; // Si es Cósmico alcanza 2 casillas, si no 1
+
+        // Verificamos el tipo de celda sobre la que está parada la unidad
+        GridObject originNode = activeGridSystem.GetGridObject(unitGridPos) as GridObject;
+        bool isStandingOnRhombus = (originNode != null && originNode.GetTileType() == TileType.Rhombus);
 
         foreach (EnergyDirection baseDirection in currentAspect.GetActiveDirections())
         {
@@ -65,46 +66,88 @@ public class UnitEnergy : MonoBehaviour
             int rotatedDirIndex = (baseDirIndex + rotationOffset) % 8;
             EnergyDirection finalDirection = (EnergyDirection)rotatedDirIndex;
 
-            // Calculamos el offset base de 1 dirección
             GridPosition baseOffset = EnergyGridExtensions.GetDirectionOffset(finalDirection);
+            bool isDiagonal = (Mathf.Abs(baseOffset.x) > 0 && Mathf.Abs(baseOffset.z) > 0);
 
-            // 2. Iteramos desde la paso 1 hasta el alcance máximo (1 o 2)
-            for (int step = 1; step <= maxReachStep; step++)
+            // --- MANEJO DE GEOMETRÍA DESDE UN ROMBO ---
+            if (isStandingOnRhombus)
             {
-                // Multiplicamos el offset por el paso actual
-                GridPosition currentStepOffset = new GridPosition(baseOffset.x * step, baseOffset.z * step);
-                GridPosition targetPos = unitGridPos + currentStepOffset;
-
-                // Envoltura Toroidal
-                if (isToroid && ToroidLevelGrid.ToroidInstance != null)
+                if (isDiagonal)
                 {
-                    targetPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(targetPos);
-                }
-
-                // Filtro Geométrico de adyacencia y límites de mapa
-                if (activeGridSystem.IsValidGridPosition(targetPos))
-                {
-                    GridObject originNode = activeGridSystem.GetGridObject(unitGridPos) as GridObject;
-                    if (originNode != null && originNode.GetTileType() == TileType.Rhombus)
+                    // En un vértice de Rombo NO hay energía estándar (paso 1 no existe).
+                    // SOLO si es Cósmico, la energía "salta" directamente al Rombo contiguo en (1,1).
+                    if (isCosmic)
                     {
-                        // Bloqueamos salto diagonal desde rombo
-                        if (Mathf.Abs(currentStepOffset.x) > 0 && Mathf.Abs(currentStepOffset.z) > 0)
+                        GridPosition cosmicRhombusPos = unitGridPos + baseOffset; // Distancia (1,1) al Rombo vecino
+
+                        if (isToroid && ToroidLevelGrid.ToroidInstance != null)
                         {
-                            continue;
+                            cosmicRhombusPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(cosmicRhombusPos);
                         }
-                    }
 
-                    // Si la casilla es válida, la agregamos al mapa de energía
-                    if (!validEnergyPositions.Contains(targetPos))
-                    {
-                        validEnergyPositions.Add(targetPos);
+                        if (activeGridSystem.IsValidGridPosition(cosmicRhombusPos))
+                        {
+                            if (!validEnergyPositions.Contains(cosmicRhombusPos))
+                            {
+                                validEnergyPositions.Add(cosmicRhombusPos);
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    // Si la primera casilla no es válida o choca fuera de límites en grid normal,
-                    // rompemos el paso para no proyectar casillas flotantes más allá.
-                    if (!isToroid) break;
+                    // En un lado de Rombo (ortogonal: N, S, E, O) apunta a Octágonos:
+                    // Paso 1 -> Octágono adyacente | Paso 2 (Cósmico) -> Rombo adyacente al octágono
+                    int maxStep = isCosmic ? 2 : 1;
+
+                    for (int step = 1; step <= maxStep; step++)
+                    {
+                        GridPosition targetPos = unitGridPos + new GridPosition(baseOffset.x * step, baseOffset.z * step);
+
+                        if (isToroid && ToroidLevelGrid.ToroidInstance != null)
+                        {
+                            targetPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(targetPos);
+                        }
+
+                        if (activeGridSystem.IsValidGridPosition(targetPos))
+                        {
+                            if (!validEnergyPositions.Contains(targetPos))
+                            {
+                                validEnergyPositions.Add(targetPos);
+                            }
+                        }
+                        else if (!isToroid)
+                        {
+                            break; 
+                        }
+                    }
+                }
+            }
+            // --- MANEJO ESTÁNDAR DESDE UN OCTÁGONO ---
+            else
+            {
+                int maxStep = isCosmic ? 2 : 1;
+
+                for (int step = 1; step <= maxStep; step++)
+                {
+                    GridPosition targetPos = unitGridPos + new GridPosition(baseOffset.x * step, baseOffset.z * step);
+
+                    if (isToroid && ToroidLevelGrid.ToroidInstance != null)
+                    {
+                        targetPos = ToroidLevelGrid.ToroidInstance.GetWrappedGridPosition(targetPos);
+                    }
+
+                    if (activeGridSystem.IsValidGridPosition(targetPos))
+                    {
+                        if (!validEnergyPositions.Contains(targetPos))
+                        {
+                            validEnergyPositions.Add(targetPos);
+                        }
+                    }
+                    else if (!isToroid)
+                    {
+                        break;
+                    }
                 }
             }
         }

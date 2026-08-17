@@ -1,9 +1,17 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "NewEmotype", menuName = "Energy/Emotype")]
 public class EmotypeData : ScriptableObject
 {
     [SerializeField] string emotypeName;
+    
+    [Header("Configuración de Gestos")]
+    [SerializeField] private List<GestureData> availableGestures = new List<GestureData>();
+
+    [Header("Parámetros de Ánimo y Arquetopía")]
+    [SerializeField] private int initialMoodValue = 50;
+    [SerializeField] private int maxMoodValue = 100;
     
     [Header("Configuracion de Clase")]
     [Tooltip("Selecciona la clase del emotipo.")]
@@ -23,10 +31,12 @@ public class EmotypeData : ScriptableObject
     [SerializeField] private int transferable_Knots = 1;
     [SerializeField] private int total_Knots = 1;
     
-
+    public List<GestureData> GetAvailableGestures() => availableGestures;
     public EnergyDirection[] GetActiveDirections() => activeDirections;
     public EmotypePrimaryClass GetPrimaryClass() => primaryClass;
     public EmotypeSecondaryClass GetSecondaryClass() => secondaryClass;
+    public int GetInitialMoodValue() => initialMoodValue;
+    public int GetMaxMoodValue() => maxMoodValue;
     public int GetImpulse() => impulse;
     public int GetGestures() => gestures;
     public int GetPermanency() => permanency;
