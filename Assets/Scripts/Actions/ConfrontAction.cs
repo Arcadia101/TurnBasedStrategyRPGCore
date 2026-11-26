@@ -8,29 +8,35 @@ public class ConfrontAction : BaseAction
 
     public override void TakeAction(GridPosition gridPosition, Action onActionComplete)
     {
-        // 1. Primero buscamos el objetivo en el plano activo (Normal o Toroidal)
-        targetUnit = GetGridContext().GetUnitAtGridPosition(gridPosition);
+        // 1. Buscamos específicamente una unidad del bando contrario en esa casilla y en el mismo plano
+        targetUnit = null;
+        foreach (Unit candidate in GetGridContext().GetUnitListAtGridPosition(gridPosition))
+        {
+            if (candidate != null && candidate.IsEnemy() != unit.IsEnemy())
+            {
+                targetUnit = candidate;
+                break;
+            }
+        }
 
         if (targetUnit == null)
         {
-            Debug.LogWarning($"[ConfrontAction] No se encontro objetivo en {gridPosition}");
+            Debug.LogWarning($"[ConfrontAction] No se encontro objetivo rival en {gridPosition}");
             onActionComplete?.Invoke();
             return;
         }
 
-        // 2. Registramos el objetivo en targetsInTile para que BaseAction.GetTargetUnit() lo devuelva a CameraManager
+        // 2. Registramos el objetivo en targetsInTile para CameraManager
         targetsInTile.Clear();
         targetsInTile.Add(targetUnit);
         currentTargetIndex = 0;
 
-        // 3. Ahora si disparamos ActionStart (CameraManager ya recibira un target valido)
+        // 3. Disparamos ActionStart y arrancamos el duelo
         ActionStart(onActionComplete);
-
-        // 4. Escuchamos el fin del duelo y lo iniciamos
         CombatDuelSession.Instance.OnDuelEnded += HandleDuelEnded;
         CombatDuelSession.Instance.StartDuel(unit, targetUnit, CombatInteractionType.Confrontation);
     }
-
+    
     private void HandleDuelEnded()
     {
         CombatDuelSession.Instance.OnDuelEnded -= HandleDuelEnded;
@@ -44,6 +50,7 @@ public class ConfrontAction : BaseAction
         foreach (Unit otherUnit in UnitManager.Instance.GetUnitList())
         {
             if (otherUnit == null || otherUnit == unit) continue;
+            if (otherUnit.GetCurrentGridType() != unit.GetCurrentGridType()) continue;
 
             if (CombatContextValidator.CanConfront(unit, otherUnit))
             {

@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &300001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300002}
+  - component: {fileID: 300003}
+  m_Layer: 0
+  m_Name: RelationshipPoolManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &300002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300001}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &300003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f6a88fd68a4d23220f016d7cf89fd1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RelationshipPoolManager
+  playerGenitoEmotypes:
+  - {fileID: 11400000, guid: 3348e18e7c5b90e43a61815e9a055821, type: 2}
+  - {fileID: 11400000, guid: 64fe2132d809fc648891b7267075c6db, type: 2}
+  - {fileID: 11400000, guid: 3cfa4a8e9e40a064da99088d9edbc1e6, type: 2}
+  playerCosmicEmotype: {fileID: 11400000, guid: 176e33db5b1c2c740a5e0f6c0c421c8d, type: 2}
+  enemyGenitoEmotypes:
+  - {fileID: 11400000, guid: dd40b1dfa9148cc478af7c44f5104044, type: 2}
+  - {fileID: 11400000, guid: 0b9be4386c157684d8137b1795a5f721, type: 2}
+  - {fileID: 11400000, guid: 54725de0c8d88c649bf0c84f611cc91d, type: 2}
+  enemyCosmicEmotype: {fileID: 11400000, guid: 95ff451bed1e6734ea5bd370d9931245, type: 2}
+  assignInitialFromPoolOnStart: 1
+  recyclePoolWhenEmpty: 0

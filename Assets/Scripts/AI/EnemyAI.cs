@@ -2,14 +2,14 @@ using System;
 using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
-{ 
+{
     private enum State
     {
         WaitingForEnemyTurn,
         TakingTurn,
         Busy,
     }
-    
+
     private State state;
     private float timer;
 
@@ -44,7 +44,7 @@ public class EnemyAI : MonoBehaviour
                     }
                     else
                     {
-                        //No enemies have actions to take, end turn.
+                        // No enemies have actions to take, end turn.
                         TurnSystem.Instance.NextTurn();
                     }
                 }
@@ -59,7 +59,7 @@ public class EnemyAI : MonoBehaviour
         timer = .5f;
         state = State.TakingTurn;
     }
-    
+
     private void TurnSystem_OnTurnChanged(object sender, EventArgs e)
     {
         if (!TurnSystem.Instance.IsPlayerTurn())
@@ -91,38 +91,44 @@ public class EnemyAI : MonoBehaviour
     {
         EnemyAIAction bestEnemyAIAction = null;
         BaseAction bestBaseAction = null;
+
         foreach (BaseAction baseAction in enemyUnit.GetBaseActionArray())
         {
-            if (!enemyUnit.CanSpendActionPointsToTakeAction(baseAction))
+            // La IA solo usa Confrontar y Mover (ignora Shoot, Sword, Grenade, Rotate, Evade)
+            if (baseAction is not ConfrontAction && baseAction is not MoveAction)
             {
-                //Enemy can't take this action.
                 continue;
             }
 
-            if (bestEnemyAIAction == null)
+            // Validar el recurso correcto segun la accion
+            bool canAfford = (baseAction is MoveAction)
+                ? enemyUnit.CanSpendMovePointsToMove(baseAction)
+                : enemyUnit.CanSpendActionPointsToTakeAction(baseAction);
+
+            if (!canAfford) continue;
+
+            EnemyAIAction testEnemyAIAction = baseAction.GetBestEnemyAIAction();
+            if (testEnemyAIAction == null) continue;
+
+            // Prioridad absoluta a Confrontar si tiene un objetivo valido
+            if (baseAction is ConfrontAction)
             {
-                bestEnemyAIAction = baseAction.GetBestEnemyAIAction();
+                testEnemyAIAction.actionValue += 1000;
+            }
+
+            if (bestEnemyAIAction == null || testEnemyAIAction.actionValue > bestEnemyAIAction.actionValue)
+            {
+                bestEnemyAIAction = testEnemyAIAction;
                 bestBaseAction = baseAction;
             }
-            else
-            {
-                EnemyAIAction testEnemyAIAction = baseAction.GetBestEnemyAIAction();
-                if (testEnemyAIAction != null && testEnemyAIAction.actionValue > bestEnemyAIAction.actionValue)
-                {
-                    bestEnemyAIAction = baseAction.GetBestEnemyAIAction();
-                    bestBaseAction = baseAction;
-                }
-            }
         }
-        
+
         if (bestEnemyAIAction != null && enemyUnit.TrySpendActionPointsOrMovePointsToTakeActionOrMove(bestBaseAction))
         {
             bestBaseAction.TakeAction(bestEnemyAIAction.gridPosition, onEnemyAIActionComplete);
             return true;
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 }

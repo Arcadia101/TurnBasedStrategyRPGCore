@@ -84,7 +84,6 @@ public class CombatDuelUI : MonoBehaviour
         currentDefender = defender;
         isWaitingClashFeedback = false;
 
-        // Seguro de inicializacion: si las unidades aun no cargaron sus gestos desde EmotypeData, los carga aqui
         EnsureGesturesInitialized(currentAttacker);
         EnsureGesturesInitialized(currentDefender);
 
@@ -99,9 +98,16 @@ public class CombatDuelUI : MonoBehaviour
 
         if (interactionTypeText != null)
         {
-            interactionTypeText.text = interactionType == CombatInteractionType.Confrontation
-                ? "CONFRONTACION"
-                : "EVASION";
+            if (currentAttacker != null && currentAttacker.IsEnemy())
+            {
+                interactionTypeText.text = "TE CONFRONTAN (ELIGE DEFENSA)";
+            }
+            else
+            {
+                interactionTypeText.text = interactionType == CombatInteractionType.Confrontation
+                    ? "CONFRONTACION"
+                    : "EVASION";
+            }
         }
 
         ApplyPlaneTheme();
@@ -184,13 +190,23 @@ public class CombatDuelUI : MonoBehaviour
             InputManager.Instance.SwitchToGameplayMap();
     }
 
-    private void OnExpressionSelected(RuntimeGesture attackerGesture)
+    private void OnExpressionSelected(RuntimeGesture playerSelectedGesture)
     {
         if (isWaitingClashFeedback || CombatDuelSession.Instance == null || !CombatDuelSession.Instance.IsDuelActive())
             return;
 
-        RuntimeGesture defenderResponse = PickDefenderAutoGesture(currentDefender);
-        CombatDuelSession.Instance.ResolveGestureClash(attackerGesture, defenderResponse);
+        bool enemyIsAttacking = currentAttacker != null && currentAttacker.IsEnemy();
+
+        if (enemyIsAttacking)
+        {
+            RuntimeGesture enemyAttackGesture = PickDefenderAutoGesture(currentAttacker);
+            CombatDuelSession.Instance.ResolveGestureClash(enemyAttackGesture, playerSelectedGesture);
+        }
+        else
+        {
+            RuntimeGesture enemyDefenseGesture = PickDefenderAutoGesture(currentDefender);
+            CombatDuelSession.Instance.ResolveGestureClash(playerSelectedGesture, enemyDefenseGesture);
+        }
     }
 
     private void OnRetreatClicked()
@@ -211,10 +227,18 @@ public class CombatDuelUI : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        HealthSystem attackerHealth = currentAttacker.GetComponent<HealthSystem>();
-        if (attackerHealth == null) return;
+        Unit playerUnit = currentAttacker.IsEnemy() ? currentDefender : currentAttacker;
+        if (playerUnit == null) return;
 
-        List<RuntimeGesture> gestures = attackerHealth.GetRuntimeGestures();
+        if (interactionTypeText != null && currentAttacker.IsEnemy())
+        {
+            interactionTypeText.text = "TE CONFRONTAN (ELIGE DEFENSA)";
+        }
+
+        HealthSystem playerHealth = playerUnit.GetComponent<HealthSystem>();
+        if (playerHealth == null) return;
+
+        List<RuntimeGesture> gestures = playerHealth.GetRuntimeGestures();
         Button firstInteractable = null;
 
         foreach (RuntimeGesture gesture in gestures)
@@ -246,8 +270,12 @@ public class CombatDuelUI : MonoBehaviour
 
     private void RefreshUnitBoxes()
     {
-        UpdateSingleUnitBox(currentDefender, defenderNameText, defenderKnotsText, defenderKnotsBar);
-        UpdateSingleUnitBox(currentAttacker, attackerNameText, attackerKnotsText, attackerKnotsBar);
+        bool enemyIsAttacking = currentAttacker != null && currentAttacker.IsEnemy();
+        Unit topEnemyUnit = enemyIsAttacking ? currentAttacker : currentDefender;
+        Unit bottomPlayerUnit = enemyIsAttacking ? currentDefender : currentAttacker;
+
+        UpdateSingleUnitBox(topEnemyUnit, defenderNameText, defenderKnotsText, defenderKnotsBar);
+        UpdateSingleUnitBox(bottomPlayerUnit, attackerNameText, attackerKnotsText, attackerKnotsBar);
     }
 
     private void UpdateSingleUnitBox(Unit unit, TextMeshProUGUI nameTxt, TextMeshProUGUI knotsTxt, Image knotsBar)
