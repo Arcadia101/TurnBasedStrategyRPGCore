@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Pena
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Pena
+  availableGestures:
+  - {fileID: 11400000, guid: c5666aafa95b8ac01bb53b035fffd577, type: 2}
+  - {fileID: 11400000, guid: 0386a13b94820b088c9a88dbdd22e105, type: 2}
   primaryClass: 5
   secondaryClass: 4
   activeDirections: 04000000

@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: "Desilusi\xF3n"
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: "Desilusi\xF3n"
+  availableGestures:
+  - {fileID: 11400000, guid: 0c6fe60ada35e56f4af172bc6b47ca10, type: 2}
+  - {fileID: 11400000, guid: c5666aafa95b8ac01bb53b035fffd577, type: 2}
+  - {fileID: 11400000, guid: f908c202f542c889838238023676f981, type: 2}
   primaryClass: 6
   secondaryClass: 4
   activeDirections: 0500000004000000

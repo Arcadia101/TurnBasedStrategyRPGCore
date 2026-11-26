@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: "N\xE1usea"
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: "N\xE1usea"
+  availableGestures:
+  - {fileID: 11400000, guid: 1a419979fa2e8f0f49805d88fe95d839, type: 2}
+  - {fileID: 11400000, guid: 0c6fe60ada35e56f4af172bc6b47ca10, type: 2}
   primaryClass: 6
   secondaryClass: 5
   activeDirections: 05000000

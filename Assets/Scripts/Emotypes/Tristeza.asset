@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Tristeza
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Tristeza
+  availableGestures:
+  - {fileID: 11400000, guid: c5666aafa95b8ac01bb53b035fffd577, type: 2}
+  - {fileID: 11400000, guid: 0386a13b94820b088c9a88dbdd22e105, type: 2}
+  - {fileID: 11400000, guid: 1a419979fa2e8f0f49805d88fe95d839, type: 2}
+  - {fileID: 11400000, guid: 343af70485d5011dbb5283e3a5f4be0f, type: 2}
   primaryClass: 0
   secondaryClass: 4
   activeDirections: 04000000

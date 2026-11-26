@@ -13,6 +13,10 @@ MonoBehaviour:
   m_Name: "Indignaci\xF3n"
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: "Indignaci\xF3n"
+  availableGestures:
+  - {fileID: 11400000, guid: 1a419979fa2e8f0f49805d88fe95d839, type: 2}
+  - {fileID: 11400000, guid: b60418df0d4a2e4d9329b034c2891ee5, type: 2}
+  - {fileID: 11400000, guid: 0386a13b94820b088c9a88dbdd22e105, type: 2}
   primaryClass: 6
   secondaryClass: 0
   activeDirections: 0000000005000000

@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Asco
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Asco
+  availableGestures:
+  - {fileID: 11400000, guid: 1a419979fa2e8f0f49805d88fe95d839, type: 2}
+  - {fileID: 11400000, guid: 0c6fe60ada35e56f4af172bc6b47ca10, type: 2}
+  - {fileID: 11400000, guid: 0386a13b94820b088c9a88dbdd22e105, type: 2}
+  - {fileID: 11400000, guid: a5b726c294108ecc85075a17d2063d6b, type: 2}
   primaryClass: 0
   secondaryClass: 5
   activeDirections: 05000000

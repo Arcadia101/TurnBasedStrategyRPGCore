@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Sorpresa
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Sorpresa
+  availableGestures:
+  - {fileID: 11400000, guid: a5b726c294108ecc85075a17d2063d6b, type: 2}
+  - {fileID: 11400000, guid: f908c202f542c889838238023676f981, type: 2}
   primaryClass: 2
   secondaryClass: 1
   activeDirections: 01000000

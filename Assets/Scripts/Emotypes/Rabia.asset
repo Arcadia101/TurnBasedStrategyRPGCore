@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Rabia
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Rabia
+  availableGestures:
+  - {fileID: 11400000, guid: 343af70485d5011dbb5283e3a5f4be0f, type: 2}
+  - {fileID: 11400000, guid: b60418df0d4a2e4d9329b034c2891ee5, type: 2}
+  - {fileID: 11400000, guid: a5b726c294108ecc85075a17d2063d6b, type: 2}
+  - {fileID: 11400000, guid: 0386a13b94820b088c9a88dbdd22e105, type: 2}
   primaryClass: 0
   secondaryClass: 0
   activeDirections: 00000000

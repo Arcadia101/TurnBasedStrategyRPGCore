@@ -13,6 +13,11 @@ MonoBehaviour:
   m_Name: Asombro
   m_EditorClassIdentifier: Assembly-CSharp::EmotypeData
   emotypeName: Asombro
+  availableGestures:
+  - {fileID: 11400000, guid: a5b726c294108ecc85075a17d2063d6b, type: 2}
+  - {fileID: 11400000, guid: f908c202f542c889838238023676f981, type: 2}
+  - {fileID: 11400000, guid: 343af70485d5011dbb5283e3a5f4be0f, type: 2}
+  - {fileID: 11400000, guid: 0c6fe60ada35e56f4af172bc6b47ca10, type: 2}
   primaryClass: 0
   secondaryClass: 1
   activeDirections: 01000000
